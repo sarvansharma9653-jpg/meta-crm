@@ -4,25 +4,25 @@ import { authenticateToken } from './auth.js';
 
 const router = express.Router();
 
-// Helper to get a setting
-function getSetting(key, defaultValue = '') {
-  const row = dbClient.queryOne('SELECT value FROM settings WHERE key = ?', [key]);
+// Helper to get a setting (async)
+async function getSetting(key, defaultValue = '') {
+  const row = await dbClient.queryOne('SELECT value FROM settings WHERE key = ?', [key]);
   return row ? row.value : defaultValue;
 }
 
-// Helper to set a setting
-function setSetting(key, value) {
-  dbClient.run(
+// Helper to set a setting (async)
+async function setSetting(key, value) {
+  await dbClient.run(
     'INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
     [key, value]
   );
 }
 
 // GET Meta Settings (for authenticated CRM users)
-router.get('/settings', authenticateToken, (req, res) => {
+router.get('/settings', authenticateToken, async (req, res) => {
   try {
-    const accessToken = getSetting('meta_access_token');
-    const verifyToken = getSetting('meta_verify_token', 'crm_meta_verify_token_default_2026');
+    const accessToken = await getSetting('meta_access_token');
+    const verifyToken = await getSetting('meta_verify_token', 'crm_meta_verify_token_default_2026');
 
     res.json({
       // Mask access token for security
@@ -37,15 +37,15 @@ router.get('/settings', authenticateToken, (req, res) => {
 });
 
 // POST save Meta Settings
-router.post('/settings', authenticateToken, (req, res) => {
+router.post('/settings', authenticateToken, async (req, res) => {
   const { meta_access_token, meta_verify_token } = req.body;
 
   try {
     if (meta_access_token !== undefined) {
-      setSetting('meta_access_token', meta_access_token);
+      await setSetting('meta_access_token', meta_access_token);
     }
     if (meta_verify_token !== undefined) {
-      setSetting('meta_verify_token', meta_verify_token);
+      await setSetting('meta_verify_token', meta_verify_token);
     }
     res.json({ message: 'Settings saved successfully' });
   } catch (error) {
@@ -55,13 +55,12 @@ router.post('/settings', authenticateToken, (req, res) => {
 });
 
 // GET Facebook Webhook verification (called by Meta server)
-// Meta makes a GET request like: WebhookURL?hub.mode=subscribe&hub.challenge=1158201444&hub.verify_token=my_verify_token
-router.get('/webhook', (req, res) => {
+router.get('/webhook', async (req, res) => {
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
 
-  const localVerifyToken = getSetting('meta_verify_token', 'crm_meta_verify_token_default_2026');
+  const localVerifyToken = await getSetting('meta_verify_token', 'crm_meta_verify_token_default_2026');
 
   if (mode && token) {
     if (mode === 'subscribe' && token === localVerifyToken) {
@@ -91,7 +90,6 @@ router.post('/webhook', async (req, res) => {
           if (change.field === 'leadgen') {
             const leadgenId = change.value.leadgen_id;
             const formId = change.value.form_id;
-            const pageId = change.value.page_id;
 
             console.log(`Processing leadgen ID: ${leadgenId} for Form ID: ${formId}`);
 
@@ -111,13 +109,13 @@ router.post('/webhook', async (req, res) => {
   }
 });
 
-// Helper function to fetch lead details using Graph API and store them in SQLite database
+// Helper function to fetch lead details using Graph API and store them in database
 async function fetchAndStoreMetaLead(leadgenId, formId) {
-  const accessToken = getSetting('meta_access_token');
+  const accessToken = await getSetting('meta_access_token');
   if (!accessToken) {
     console.error('Meta Access Token is missing in CRM settings. Cannot fetch lead details.');
     // Store lead placeholder so it's not lost entirely
-    dbClient.run(
+    await dbClient.run(
       `INSERT INTO leads (name, source, meta_lead_id, campaign_name) 
        VALUES (?, ?, ?, ?)
        ON CONFLICT(meta_lead_id) DO NOTHING`,
@@ -166,8 +164,8 @@ async function fetchAndStoreMetaLead(leadgenId, formId) {
       name = `Meta Lead #${leadgenId.slice(-6)}`;
     }
 
-    // Insert or update lead in SQLite database
-    dbClient.run(
+    // Insert or update lead in database
+    await dbClient.run(
       `INSERT INTO leads (name, email, phone, status, source, meta_lead_id, campaign_name) 
        VALUES (?, ?, ?, 'NEW', 'Meta Ads', ?, ?)
        ON CONFLICT(meta_lead_id) DO UPDATE SET 
@@ -182,7 +180,7 @@ async function fetchAndStoreMetaLead(leadgenId, formId) {
   } catch (error) {
     console.error('Error fetching Meta lead details:', error);
     // Insert placeholder so lead record is preserved
-    dbClient.run(
+    await dbClient.run(
       `INSERT INTO leads (name, source, meta_lead_id, campaign_name) 
        VALUES (?, ?, ?, ?)
        ON CONFLICT(meta_lead_id) DO NOTHING`,
@@ -192,12 +190,12 @@ async function fetchAndStoreMetaLead(leadgenId, formId) {
 }
 
 // Dev Mock Route: Allows mocking a Meta webhook call easily during testing without actual facebook integration
-router.post('/mock-webhook', (req, res) => {
+router.post('/mock-webhook', async (req, res) => {
   const { name, email, phone, campaign_name, lead_id } = req.body;
   const mockLeadId = lead_id || `mock_meta_${Math.floor(Math.random() * 10000000)}`;
 
   try {
-    dbClient.run(
+    await dbClient.run(
       `INSERT INTO leads (name, email, phone, status, source, meta_lead_id, campaign_name) 
        VALUES (?, ?, ?, 'NEW', 'Meta Ads', ?, ?)
        ON CONFLICT(meta_lead_id) DO UPDATE SET 

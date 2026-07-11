@@ -4,14 +4,14 @@ import { authenticateToken } from './auth.js';
 
 const router = express.Router();
 
-router.get('/stats', authenticateToken, (req, res) => {
+router.get('/stats', authenticateToken, async (req, res) => {
   try {
     // 1. Total Leads
-    const totalLeadsRow = dbClient.queryOne('SELECT COUNT(*) as count FROM leads');
-    const totalLeads = totalLeadsRow ? totalLeadsRow.count : 0;
+    const totalLeadsRow = await dbClient.queryOne('SELECT COUNT(*) as count FROM leads');
+    const totalLeads = totalLeadsRow ? parseInt(totalLeadsRow.count) : 0;
 
     // 2. Leads by Status
-    const statusRows = dbClient.query('SELECT status, COUNT(*) as count FROM leads GROUP BY status');
+    const statusRows = await dbClient.query('SELECT status, COUNT(*) as count FROM leads GROUP BY status');
     const statusCounts = {
       NEW: 0,
       CALLED: 0,
@@ -22,25 +22,25 @@ router.get('/stats', authenticateToken, (req, res) => {
     };
     statusRows.forEach(row => {
       if (statusCounts[row.status] !== undefined) {
-        statusCounts[row.status] = row.count;
+        statusCounts[row.status] = parseInt(row.count);
       }
     });
 
     // 3. Total Revenue Collected
-    const revenueRow = dbClient.queryOne('SELECT SUM(amount) as total FROM payments');
-    const totalRevenue = revenueRow && revenueRow.total ? revenueRow.total : 0;
+    const revenueRow = await dbClient.queryOne('SELECT SUM(amount) as total FROM payments');
+    const totalRevenue = revenueRow && revenueRow.total ? parseFloat(revenueRow.total) : 0;
 
     // 4. Total Calls Logged
-    const totalCallsRow = dbClient.queryOne('SELECT COUNT(*) as count FROM calls');
-    const totalCalls = totalCallsRow ? totalCallsRow.count : 0;
+    const totalCallsRow = await dbClient.queryOne('SELECT COUNT(*) as count FROM calls');
+    const totalCalls = totalCallsRow ? parseInt(totalCallsRow.count) : 0;
 
     // 5. Recent 5 Leads
-    const recentLeads = dbClient.query(
+    const recentLeads = await dbClient.query(
       'SELECT id, name, email, phone, status, source, campaign_name, created_at FROM leads ORDER BY created_at DESC LIMIT 5'
     );
 
     // 6. Upcoming 5 Followups (only pending ones)
-    const upcomingFollowups = dbClient.query(
+    const upcomingFollowups = await dbClient.query(
       `SELECT f.id, f.note, f.followup_date, f.status, l.name as lead_name, l.phone as lead_phone, l.id as lead_id
        FROM followups f 
        JOIN leads l ON f.lead_id = l.id
@@ -50,7 +50,7 @@ router.get('/stats', authenticateToken, (req, res) => {
     );
 
     // 7. Recent 5 Payments
-    const recentPayments = dbClient.query(
+    const recentPayments = await dbClient.query(
       `SELECT p.id, p.amount, p.payment_date, p.method, l.name as lead_name, l.id as lead_id
        FROM payments p
        JOIN leads l ON p.lead_id = l.id
@@ -59,10 +59,10 @@ router.get('/stats', authenticateToken, (req, res) => {
     );
 
     // 8. Lead Source distribution
-    const sourceRows = dbClient.query('SELECT source, COUNT(*) as count FROM leads GROUP BY source');
+    const sourceRows = await dbClient.query('SELECT source, COUNT(*) as count FROM leads GROUP BY source');
     const sourceCounts = {};
     sourceRows.forEach(row => {
-      sourceCounts[row.source] = row.count;
+      sourceCounts[row.source] = parseInt(row.count);
     });
 
     res.json({

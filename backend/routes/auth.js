@@ -25,7 +25,7 @@ export function authenticateToken(req, res, next) {
 }
 
 // User Registration (Optional/Self-service or Admin created)
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -34,7 +34,7 @@ router.post('/register', (req, res) => {
 
   try {
     // Check if user already exists
-    const existingUser = dbClient.queryOne('SELECT * FROM users WHERE username = ?', [username]);
+    const existingUser = await dbClient.queryOne('SELECT * FROM users WHERE username = ?', [username]);
     if (existingUser) {
       return res.status(400).json({ error: 'Username already exists' });
     }
@@ -44,7 +44,7 @@ router.post('/register', (req, res) => {
     const passwordHash = bcrypt.hashSync(password, salt);
 
     // Save user
-    dbClient.run('INSERT INTO users (username, password_hash) VALUES (?, ?)', [username, passwordHash]);
+    await dbClient.run('INSERT INTO users (username, password_hash) VALUES (?, ?)', [username, passwordHash]);
     
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
@@ -54,7 +54,7 @@ router.post('/register', (req, res) => {
 });
 
 // User Login
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -63,7 +63,7 @@ router.post('/login', (req, res) => {
 
   try {
     // Find user
-    const user = dbClient.queryOne('SELECT * FROM users WHERE username = ?', [username]);
+    const user = await dbClient.queryOne('SELECT * FROM users WHERE username = ?', [username]);
     if (!user) {
       return res.status(401).json({ error: 'Invalid username or password' });
     }
@@ -91,9 +91,9 @@ router.post('/login', (req, res) => {
 });
 
 // Get Current User Profile
-router.get('/me', authenticateToken, (req, res) => {
+router.get('/me', authenticateToken, async (req, res) => {
   try {
-    const user = dbClient.queryOne('SELECT id, username, created_at FROM users WHERE id = ?', [req.user.id]);
+    const user = await dbClient.queryOne('SELECT id, username, created_at FROM users WHERE id = ?', [req.user.id]);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }

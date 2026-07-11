@@ -5,7 +5,7 @@ import { authenticateToken } from './auth.js';
 const router = express.Router();
 
 // GET all leads (with search, status filter, and source filter)
-router.get('/', authenticateToken, (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   const { search, status, source } = req.query;
 
   try {
@@ -30,7 +30,7 @@ router.get('/', authenticateToken, (req, res) => {
 
     sql += ' ORDER BY created_at DESC';
 
-    const leads = dbClient.query(sql, params);
+    const leads = await dbClient.query(sql, params);
     res.json(leads);
   } catch (error) {
     console.error('Fetch leads error:', error);
@@ -39,18 +39,18 @@ router.get('/', authenticateToken, (req, res) => {
 });
 
 // GET single lead detail with history (calls, followups, payments)
-router.get('/:id', authenticateToken, (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
 
   try {
-    const lead = dbClient.queryOne('SELECT * FROM leads WHERE id = ?', [id]);
+    const lead = await dbClient.queryOne('SELECT * FROM leads WHERE id = ?', [id]);
     if (!lead) {
       return res.status(404).json({ error: 'Lead not found' });
     }
 
-    const calls = dbClient.query('SELECT * FROM calls WHERE lead_id = ? ORDER BY call_date DESC', [id]);
-    const followups = dbClient.query('SELECT * FROM followups WHERE lead_id = ? ORDER BY followup_date ASC', [id]);
-    const payments = dbClient.query('SELECT * FROM payments WHERE lead_id = ? ORDER BY payment_date DESC', [id]);
+    const calls = await dbClient.query('SELECT * FROM calls WHERE lead_id = ? ORDER BY call_date DESC', [id]);
+    const followups = await dbClient.query('SELECT * FROM followups WHERE lead_id = ? ORDER BY followup_date ASC', [id]);
+    const payments = await dbClient.query('SELECT * FROM payments WHERE lead_id = ? ORDER BY payment_date DESC', [id]);
 
     res.json({
       lead,
@@ -67,7 +67,7 @@ router.get('/:id', authenticateToken, (req, res) => {
 });
 
 // POST manually create a lead
-router.post('/', authenticateToken, (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
   const { name, email, phone, status, source, campaign_name } = req.body;
 
   if (!name) {
@@ -75,7 +75,7 @@ router.post('/', authenticateToken, (req, res) => {
   }
 
   try {
-    const result = dbClient.run(
+    const result = await dbClient.run(
       `INSERT INTO leads (name, email, phone, status, source, campaign_name) 
        VALUES (?, ?, ?, ?, ?, ?)`,
       [
@@ -88,7 +88,7 @@ router.post('/', authenticateToken, (req, res) => {
       ]
     );
 
-    const newLead = dbClient.queryOne('SELECT * FROM leads WHERE id = ?', [result.lastInsertRowid]);
+    const newLead = await dbClient.queryOne('SELECT * FROM leads WHERE id = ?', [result.lastInsertRowid]);
     res.status(201).json(newLead);
   } catch (error) {
     console.error('Create lead error:', error);
@@ -97,17 +97,17 @@ router.post('/', authenticateToken, (req, res) => {
 });
 
 // PUT update lead (status, contact info, etc.)
-router.put('/:id', authenticateToken, (req, res) => {
+router.put('/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
   const { name, email, phone, status, campaign_name } = req.body;
 
   try {
-    const lead = dbClient.queryOne('SELECT * FROM leads WHERE id = ?', [id]);
+    const lead = await dbClient.queryOne('SELECT * FROM leads WHERE id = ?', [id]);
     if (!lead) {
       return res.status(404).json({ error: 'Lead not found' });
     }
 
-    dbClient.run(
+    await dbClient.run(
       `UPDATE leads 
        SET name = ?, email = ?, phone = ?, status = ?, campaign_name = ?, updated_at = CURRENT_TIMESTAMP
        WHERE id = ?`,
@@ -121,7 +121,7 @@ router.put('/:id', authenticateToken, (req, res) => {
       ]
     );
 
-    const updatedLead = dbClient.queryOne('SELECT * FROM leads WHERE id = ?', [id]);
+    const updatedLead = await dbClient.queryOne('SELECT * FROM leads WHERE id = ?', [id]);
     res.json(updatedLead);
   } catch (error) {
     console.error('Update lead error:', error);
@@ -130,24 +130,24 @@ router.put('/:id', authenticateToken, (req, res) => {
 });
 
 // POST log a call for a lead
-router.post('/:id/calls', authenticateToken, (req, res) => {
+router.post('/:id/calls', authenticateToken, async (req, res) => {
   const { id } = req.params;
   const { note, duration, call_date } = req.body;
 
   try {
-    const lead = dbClient.queryOne('SELECT * FROM leads WHERE id = ?', [id]);
+    const lead = await dbClient.queryOne('SELECT * FROM leads WHERE id = ?', [id]);
     if (!lead) {
       return res.status(404).json({ error: 'Lead not found' });
     }
 
-    dbClient.run(
+    await dbClient.run(
       'INSERT INTO calls (lead_id, note, duration, call_date) VALUES (?, ?, ?, ?)',
       [id, note || '', duration || 0, call_date || new Date().toISOString()]
     );
 
     // Automatically transition lead status to 'CALLED' if it's currently 'NEW'
     if (lead.status === 'NEW') {
-      dbClient.run("UPDATE leads SET status = 'CALLED', updated_at = CURRENT_TIMESTAMP WHERE id = ?", [id]);
+      await dbClient.run("UPDATE leads SET status = 'CALLED', updated_at = CURRENT_TIMESTAMP WHERE id = ?", [id]);
     }
 
     res.status(201).json({ message: 'Call logged successfully' });
@@ -158,7 +158,7 @@ router.post('/:id/calls', authenticateToken, (req, res) => {
 });
 
 // POST schedule a followup
-router.post('/:id/followups', authenticateToken, (req, res) => {
+router.post('/:id/followups', authenticateToken, async (req, res) => {
   const { id } = req.params;
   const { note, followup_date } = req.body;
 
@@ -167,19 +167,19 @@ router.post('/:id/followups', authenticateToken, (req, res) => {
   }
 
   try {
-    const lead = dbClient.queryOne('SELECT * FROM leads WHERE id = ?', [id]);
+    const lead = await dbClient.queryOne('SELECT * FROM leads WHERE id = ?', [id]);
     if (!lead) {
       return res.status(404).json({ error: 'Lead not found' });
     }
 
-    dbClient.run(
+    await dbClient.run(
       'INSERT INTO followups (lead_id, note, followup_date, status) VALUES (?, ?, ?, ?)',
       [id, note || '', followup_date, 'PENDING']
     );
 
     // Automatically transition lead status to 'FOLLOWUP' if status is NEW or CALLED
     if (lead.status === 'NEW' || lead.status === 'CALLED') {
-      dbClient.run("UPDATE leads SET status = 'FOLLOWUP', updated_at = CURRENT_TIMESTAMP WHERE id = ?", [id]);
+      await dbClient.run("UPDATE leads SET status = 'FOLLOWUP', updated_at = CURRENT_TIMESTAMP WHERE id = ?", [id]);
     }
 
     res.status(201).json({ message: 'Followup scheduled successfully' });
@@ -190,7 +190,7 @@ router.post('/:id/followups', authenticateToken, (req, res) => {
 });
 
 // PUT complete or edit followup status
-router.put('/:id/followups/:followupId', authenticateToken, (req, res) => {
+router.put('/:id/followups/:followupId', authenticateToken, async (req, res) => {
   const { followupId } = req.params;
   const { status } = req.body; // PENDING, COMPLETED, MISSED
 
@@ -199,7 +199,7 @@ router.put('/:id/followups/:followupId', authenticateToken, (req, res) => {
   }
 
   try {
-    dbClient.run('UPDATE followups SET status = ? WHERE id = ?', [status, followupId]);
+    await dbClient.run('UPDATE followups SET status = ? WHERE id = ?', [status, followupId]);
     res.json({ message: 'Followup updated successfully' });
   } catch (error) {
     console.error('Update followup error:', error);
@@ -208,7 +208,7 @@ router.put('/:id/followups/:followupId', authenticateToken, (req, res) => {
 });
 
 // POST record a payment
-router.post('/:id/payments', authenticateToken, (req, res) => {
+router.post('/:id/payments', authenticateToken, async (req, res) => {
   const { id } = req.params;
   const { amount, method, transaction_id, payment_date } = req.body;
 
@@ -217,18 +217,18 @@ router.post('/:id/payments', authenticateToken, (req, res) => {
   }
 
   try {
-    const lead = dbClient.queryOne('SELECT * FROM leads WHERE id = ?', [id]);
+    const lead = await dbClient.queryOne('SELECT * FROM leads WHERE id = ?', [id]);
     if (!lead) {
       return res.status(404).json({ error: 'Lead not found' });
     }
 
-    dbClient.run(
+    await dbClient.run(
       'INSERT INTO payments (lead_id, amount, payment_date, method, transaction_id) VALUES (?, ?, ?, ?, ?)',
       [id, parseFloat(amount), payment_date || new Date().toISOString(), method || 'UPI', transaction_id || '']
     );
 
     // Mark lead status as 'PAID'
-    dbClient.run("UPDATE leads SET status = 'PAID', updated_at = CURRENT_TIMESTAMP WHERE id = ?", [id]);
+    await dbClient.run("UPDATE leads SET status = 'PAID', updated_at = CURRENT_TIMESTAMP WHERE id = ?", [id]);
 
     res.status(201).json({ message: 'Payment recorded successfully' });
   } catch (error) {
@@ -238,16 +238,16 @@ router.post('/:id/payments', authenticateToken, (req, res) => {
 });
 
 // DELETE a lead
-router.delete('/:id', authenticateToken, (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
 
   try {
-    const lead = dbClient.queryOne('SELECT * FROM leads WHERE id = ?', [id]);
+    const lead = await dbClient.queryOne('SELECT * FROM leads WHERE id = ?', [id]);
     if (!lead) {
       return res.status(404).json({ error: 'Lead not found' });
     }
 
-    dbClient.run('DELETE FROM leads WHERE id = ?', [id]);
+    await dbClient.run('DELETE FROM leads WHERE id = ?', [id]);
     res.json({ message: 'Lead deleted successfully' });
   } catch (error) {
     console.error('Delete lead error:', error);
