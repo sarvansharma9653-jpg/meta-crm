@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { apiFetch, API_HOST } from '../utils/api';
 import { 
-  Facebook, 
   Settings, 
   Copy, 
   Check, 
@@ -13,6 +12,23 @@ import {
   Eye,
   EyeOff
 } from 'lucide-react';
+
+// Custom Facebook SVG Icon since brand icons are removed in newer Lucide versions
+const Facebook = ({ size = 18, ...props }) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    width={size} 
+    height={size} 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    fill="none" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    {...props}
+  >
+    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+  </svg>
+);
 
 export default function MetaSettings() {
   const [accessToken, setAccessToken] = useState('');

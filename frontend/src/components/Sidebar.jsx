@@ -2,18 +2,34 @@ import React from 'react';
 import { 
   LayoutDashboard, 
   Users, 
-  Trello, 
+  Kanban, 
   Settings, 
   LogOut, 
-  Facebook,
   Database
 } from 'lucide-react';
+
+// Custom Facebook SVG Icon since brand icons are removed in newer Lucide versions
+const Facebook = ({ size = 18, ...props }) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    width={size} 
+    height={size} 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    fill="none" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    {...props}
+  >
+    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+  </svg>
+);
 
 export default function Sidebar({ currentPage, setCurrentPage, user, onLogout }) {
   const menuItems = [
     { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
     { id: 'leads', name: 'Leads List', icon: Users },
-    { id: 'board', name: 'Pipeline Board', icon: Trello },
+    { id: 'board', name: 'Pipeline Board', icon: Kanban },
     { id: 'meta-settings', name: 'Meta Settings', icon: Facebook },
   ];
 
