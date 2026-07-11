@@ -6,8 +6,8 @@
     "setup": "powershell -ExecutionPolicy Bypass -File ./setup.ps1",
     "backend": "cd backend && node server.js",
     "frontend": "cd frontend && npm run dev",
-    "build": "cd frontend && npm install && npm run build",
-    "start": "cd backend && node server.js"
+    "build": "npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend",
+    "start": "node backend/server.js"
   },
   "keywords": [
     "crm",
