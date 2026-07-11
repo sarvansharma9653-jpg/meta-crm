@@ -1,0 +1,21 @@
+{
+  "name": "metacrm-monorepo",
+  "version": "1.0.0",
+  "description": "Meta Ads Lead Tracking CRM System",
+  "scripts": {
+    "setup": "powershell -ExecutionPolicy Bypass -File ./setup.ps1",
+    "backend": "cd backend && node server.js",
+    "frontend": "cd frontend && npm run dev",
+    "build": "cd frontend && npm install && npm run build",
+    "start": "cd backend && node server.js"
+  },
+  "keywords": [
+    "crm",
+    "facebook-ads",
+    "leadgen",
+    "react",
+    "express"
+  ],
+  "author": "Antigravity Dev",
+  "license": "ISC"
+}

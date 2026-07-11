@@ -1,0 +1,18 @@
+# Dependency directories
+node/
+node_modules/
+
+# Local databases
+backend/crm.db
+backend/crm.db-journal
+
+# Compiled frontend files
+frontend/dist/
+
+# Local env files
+.env
+.env.local
+
+# OS system files
+.DS_Store
+Thumbs.db
