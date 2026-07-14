@@ -55,7 +55,7 @@ router.post('/settings', authenticateToken, async (req, res) => {
 });
 
 // GET Facebook Webhook verification (called by Meta server)
-router.get('/webhook', async (req, res) => {
+router.get('/', async (req, res) => {
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
@@ -75,7 +75,7 @@ router.get('/webhook', async (req, res) => {
 });
 
 // POST Facebook Webhook lead callback (called by Meta server when a lead is captured)
-router.post('/webhook', async (req, res) => {
+router.post('/', async (req, res) => {
   const body = req.body;
 
   console.log('Received Meta Webhook event:', JSON.stringify(body, null, 2));
