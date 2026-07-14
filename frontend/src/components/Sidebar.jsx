@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, 
   Users, 
@@ -6,7 +6,8 @@ import {
   Settings, 
   LogOut, 
   Database,
-  FileSpreadsheet
+  FileSpreadsheet,
+  X
 } from 'lucide-react';
 
 // Custom Facebook SVG Icon since brand icons are removed in newer Lucide versions
@@ -26,7 +27,15 @@ const Facebook = ({ size = 18, ...props }) => (
   </svg>
 );
 
-export default function Sidebar({ currentPage, setCurrentPage, user, onLogout }) {
+export default function Sidebar({ currentPage, setCurrentPage, user, onLogout, isOpen, onClose }) {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const menuItems = [
     { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
     { id: 'leads', name: 'Leads List', icon: Users },
@@ -35,21 +44,38 @@ export default function Sidebar({ currentPage, setCurrentPage, user, onLogout })
     { id: 'sheets-settings', name: 'Google Sheets', icon: FileSpreadsheet },
   ];
 
+  const sidebarStyle = isMobile ? {
+    ...styles.sidebar,
+    position: 'fixed',
+    top: 0,
+    left: isOpen ? 0 : '-260px',
+    transition: 'left 0.3s ease',
+    zIndex: 1000,
+    boxShadow: '0 0 20px rgba(0,0,0,0.6)',
+  } : styles.sidebar;
+
   return (
-    <aside style={styles.sidebar}>
+    <aside style={sidebarStyle}>
       {/* Brand Header */}
       <div style={styles.brand}>
-        <div style={styles.brandLogo}>
-          <Database size={24} color="#6366f1" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexGrow: 1 }}>
+          <div style={styles.brandLogo}>
+            <Database size={24} color="#6366f1" />
+          </div>
+          <div style={styles.brandName}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0 }}>
+              MetaCRM
+            </h2>
+            <span style={{ fontSize: '0.65rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px' }}>
+              System Console
+            </span>
+          </div>
         </div>
-        <div style={styles.brandName}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            MetaCRM
-          </h2>
-          <span style={{ fontSize: '0.65rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px' }}>
-            System Console
-          </span>
-        </div>
+        {isMobile && (
+          <button onClick={onClose} style={styles.closeBtn}>
+            <X size={18} />
+          </button>
+        )}
       </div>
 
       {/* Navigation Links */}
@@ -205,6 +231,17 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     transition: 'all 0.2s ease',
+  },
+  closeBtn: {
+    background: 'none',
+    border: 'none',
+    color: 'var(--text-secondary)',
+    cursor: 'pointer',
+    padding: '0.25rem',
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 };
 // Add hover styles in JS

@@ -16,6 +16,19 @@ export default function App() {
   
   // Navigation State
   const [currentPage, setCurrentPage] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    setSidebarOpen(false);
+  };
   
   // Selected Lead Modal State
   const [selectedLeadId, setSelectedLeadId] = useState(null);
@@ -95,25 +108,59 @@ export default function App() {
     return <Login onLoginSuccess={handleLoginSuccess} />;
   }
 
-  // Logged in -> Show dashboard console shell
+  // Dynamic layout styling
+  const appContainerStyle = {
+    display: 'flex',
+    flexDirection: isMobile ? 'column' : 'row',
+    minHeight: '100vh',
+    position: 'relative'
+  };
+
+  const mainContentStyle = {
+    ...styles.mainContent,
+    height: isMobile ? 'calc(100vh - 56px)' : '100vh',
+  };
+
   return (
-    <div className="app-container">
+    <div className="app-container" style={appContainerStyle}>
       {/* Background neon glows */}
       <div className="bg-glow-purple"></div>
       <div className="bg-glow-indigo"></div>
 
+      {/* Mobile Top Header */}
+      {isMobile && (
+        <div style={styles.mobileHeader}>
+          <button onClick={() => setSidebarOpen(true)} style={styles.menuBtn}>
+            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          <h1 style={styles.mobileTitle}>MetaCRM</h1>
+          <div style={{ width: '22px' }}></div> {/* spacer to center title */}
+        </div>
+      )}
+
+      {/* Mobile Sidebar Overlay Backdrop */}
+      {isMobile && sidebarOpen && (
+        <div style={styles.overlay} onClick={() => setSidebarOpen(false)}></div>
+      )}
+
       {/* Sidebar Navigation */}
       <Sidebar 
         currentPage={currentPage} 
-        setCurrentPage={setCurrentPage} 
+        setCurrentPage={handlePageChange} 
         user={user} 
-        onLogout={handleLogout} 
+        onLogout={handleLogout}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
 
       {/* Main Console Content View */}
-      <main style={styles.mainContent}>
+      <main style={mainContentStyle}>
         {currentPage === 'dashboard' && (
-          <Dashboard onSelectLead={handleSelectLead} setCurrentPage={setCurrentPage} />
+          <Dashboard onSelectLead={handleSelectLead} setCurrentPage={handlePageChange} />
         )}
         
         {currentPage === 'leads' && (
@@ -139,7 +186,6 @@ export default function App() {
           leadId={selectedLeadId} 
           onClose={handleCloseLeadModal} 
           onLeadUpdated={() => {
-            // Trigger refresh on window context if needed, or page state changes
             window.dispatchEvent(new Event('crm_lead_modified'));
           }}
         />
@@ -173,6 +219,47 @@ const styles = {
     flexDirection: 'column',
     overflow: 'hidden',
     position: 'relative',
+  },
+  mobileHeader: {
+    height: '56px',
+    backgroundColor: 'rgba(18, 22, 32, 0.9)',
+    backdropFilter: 'blur(16px)',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '0 1rem',
+    position: 'sticky',
+    top: 0,
+    zIndex: 99,
+  },
+  menuBtn: {
+    background: 'none',
+    border: 'none',
+    color: '#ffffff',
+    cursor: 'pointer',
+    padding: '0.25rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mobileTitle: {
+    fontSize: '1.2rem',
+    fontWeight: '800',
+    background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    margin: 0,
+  },
+  overlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backdropFilter: 'blur(4px)',
+    zIndex: 999,
   },
 };
 
