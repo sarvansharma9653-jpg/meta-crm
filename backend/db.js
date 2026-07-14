@@ -38,7 +38,7 @@ export async function initDB() {
 
     await pgPool.query(`
       CREATE TABLE IF NOT EXISTS settings (
-        key VARCHAR(255) PRIMARY KEY,
+        "key" VARCHAR(255) PRIMARY KEY,
         value TEXT NOT NULL
       )
     `);
@@ -113,7 +113,7 @@ export async function initDB() {
 
     sqliteDb.exec(`
       CREATE TABLE IF NOT EXISTS settings (
-        key TEXT PRIMARY KEY,
+        "key" TEXT PRIMARY KEY,
         value TEXT NOT NULL
       )
     `);

@@ -6,14 +6,14 @@ const router = express.Router();
 
 // Helper to get a setting (async)
 async function getSetting(key, defaultValue = '') {
-  const row = await dbClient.queryOne('SELECT value FROM settings WHERE key = ?', [key]);
+  const row = await dbClient.queryOne('SELECT value FROM settings WHERE "key" = ?', [key]);
   return row ? row.value : defaultValue;
 }
 
 // Helper to set a setting (async)
 async function setSetting(key, value) {
   await dbClient.run(
-    'INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
+    'INSERT INTO settings ("key", value) VALUES (?, ?) ON CONFLICT("key") DO UPDATE SET value = excluded.value',
     [key, value]
   );
 }
