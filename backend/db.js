@@ -209,8 +209,8 @@ export const dbClient = {
       let finalSql = translateSql(sql);
       let returningId = null;
 
-      // If it is an INSERT statement, append RETURNING id to capture lastInsertRowid
-      if (sql.trim().toUpperCase().startsWith('INSERT')) {
+      // If it is an INSERT statement, append RETURNING id to capture lastInsertRowid (except settings table)
+      if (sql.trim().toUpperCase().startsWith('INSERT') && !sql.toLowerCase().includes('into settings')) {
         finalSql += ' RETURNING id';
         const res = await pgPool.query(finalSql, params);
         returningId = res.rows[0]?.id;
