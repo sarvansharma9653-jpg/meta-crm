@@ -272,6 +272,46 @@ export default function LeadModal({ leadId, onClose, onLeadUpdated }) {
                   </div>
                 )}
               </div>
+
+              {/* Quick Communication Actions */}
+              <div style={styles.quickActionsContainer}>
+                {lead.phone && (
+                  <>
+                    <a 
+                      href={`tel:${lead.phone}`} 
+                      style={styles.actionBtnCall}
+                      title="Open Dialpad"
+                    >
+                      <PhoneCall size={14} />
+                      <span>Call Now</span>
+                    </a>
+                    
+                    <a 
+                      href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '').length === 10 ? '91' + lead.phone.replace(/[^0-9]/g, '') : lead.phone.replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(lead.name)},%20`}
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      style={styles.actionBtnWhatsapp}
+                      title="Chat on WhatsApp"
+                    >
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.003 5.324 5.328 0 11.859 0c3.166.001 6.141 1.233 8.377 3.469 2.235 2.237 3.463 5.214 3.462 8.381-.003 6.535-5.328 11.859-11.859 11.859-2.001-.002-3.967-.512-5.711-1.48L0 24zm6.549-3.782c1.624.965 3.238 1.472 4.752 1.474 5.429 0 9.849-4.42 9.853-9.852.002-2.632-1.02-5.105-2.881-6.968C16.41 3.01 13.935 1.986 11.31 1.987 5.882 1.987 1.46 6.406 1.457 11.835c0 1.636.491 3.23 1.42 4.673l-.997 3.639 3.731-.979zm12.012-7.14c-.3-.15-1.776-.876-2.052-.976-.276-.1-.476-.15-.676.15-.2.3-.776.976-.95 1.176-.176.2-.35.226-.65.076-.3-.15-1.267-.467-2.413-1.488-.893-.797-1.496-1.78-1.671-2.08-.176-.3-.018-.462.13-.61.135-.133.3-.35.45-.525.15-.175.2-.3.3-.5s.05-.375-.025-.525c-.075-.15-.676-1.626-.926-2.226-.244-.588-.492-.5-.676-.51-.176-.01-.376-.01-.576-.01-.2 0-.526.075-.802.375-.276.3-1.052 1.026-1.052 2.5s1.076 2.902 1.226 3.1c.15.2 2.117 3.232 5.129 4.53 1.109.479 1.974.767 2.651.981 1.025.326 1.958.28 2.693.17.82-.123 1.776-.726 2.026-1.399.25-.674.25-1.253.176-1.399-.076-.146-.276-.246-.576-.396z"/>
+                      </svg>
+                      <span>WhatsApp</span>
+                    </a>
+                  </>
+                )}
+                
+                {lead.email && (
+                  <a 
+                    href={`mailto:${lead.email}?subject=Meta%20CRM%20Follow-up`} 
+                    style={styles.actionBtnEmail}
+                    title="Send Email"
+                  >
+                    <Mail size={14} />
+                    <span>Email</span>
+                  </a>
+                )}
+              </div>
             </div>
 
             <div style={styles.section}>
@@ -571,6 +611,63 @@ const styles = {
   contactText: {
     fontSize: '0.85rem',
     color: '#e2e8f0',
+  },
+  quickActionsContainer: {
+    display: 'flex',
+    gap: '0.5rem',
+    marginTop: '0.75rem',
+    flexWrap: 'wrap',
+  },
+  actionBtnCall: {
+    flex: 1,
+    minWidth: '90px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.4rem',
+    backgroundColor: '#6366f1',
+    color: '#ffffff',
+    padding: '0.55rem 0.75rem',
+    borderRadius: '6px',
+    textDecoration: 'none',
+    fontSize: '0.8rem',
+    fontWeight: '600',
+    transition: 'background-color 0.2s',
+    cursor: 'pointer',
+  },
+  actionBtnWhatsapp: {
+    flex: 1,
+    minWidth: '90px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.4rem',
+    backgroundColor: '#25D366',
+    color: '#ffffff',
+    padding: '0.55rem 0.75rem',
+    borderRadius: '6px',
+    textDecoration: 'none',
+    fontSize: '0.8rem',
+    fontWeight: '600',
+    transition: 'background-color 0.2s',
+    cursor: 'pointer',
+  },
+  actionBtnEmail: {
+    flex: 1,
+    minWidth: '90px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.4rem',
+    backgroundColor: '#3b82f6',
+    color: '#ffffff',
+    padding: '0.55rem 0.75rem',
+    borderRadius: '6px',
+    textDecoration: 'none',
+    fontSize: '0.8rem',
+    fontWeight: '600',
+    transition: 'background-color 0.2s',
+    cursor: 'pointer',
   },
   statusSelect: {
     borderWidth: '1.5px',
