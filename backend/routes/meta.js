@@ -13,7 +13,7 @@ async function getSetting(key, defaultValue = '') {
 // Helper to set a setting (async)
 async function setSetting(key, value) {
   await dbClient.run(
-    'INSERT INTO settings ("key", value) VALUES (?, ?) ON CONFLICT("key") DO UPDATE SET value = excluded.value',
+    'INSERT INTO settings ("key", value) VALUES (?, ?) ON CONFLICT("key") DO UPDATE SET value = EXCLUDED.value',
     [key, value]
   );
 }
