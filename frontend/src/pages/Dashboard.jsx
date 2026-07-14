@@ -183,6 +183,11 @@ export default function Dashboard({ onSelectLead, setCurrentPage }) {
       {/* Secondary Status Counts Grid */}
       <div style={styles.secondaryGrid}>
         <div className="glass-card" style={styles.smallStatCard}>
+          <div style={{ ...styles.statusIndicator, backgroundColor: 'var(--color-qualified)' }}></div>
+          <span style={styles.smallStatLabel}>Qualified Leads</span>
+          <span style={styles.smallStatValue}>{statusCounts.QUALIFIED || 0}</span>
+        </div>
+        <div className="glass-card" style={styles.smallStatCard}>
           <div style={{ ...styles.statusIndicator, backgroundColor: 'var(--color-callback)' }}></div>
           <span style={styles.smallStatLabel}>Call Back Later</span>
           <span style={styles.smallStatValue}>{statusCounts.CALLBACK || 0}</span>

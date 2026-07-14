@@ -31,6 +31,8 @@
   --color-new-bg: rgba(56, 189, 248, 0.12);
   --color-called: #f59e0b; /* Amber */
   --color-called-bg: rgba(245, 158, 11, 0.12);
+  --color-qualified: #06b6d4; /* Cyan */
+  --color-qualified-bg: rgba(6, 182, 212, 0.12);
   --color-callback: #ec4899; /* Pink */
   --color-callback-bg: rgba(236, 72, 153, 0.12);
   --color-followup: #8b5cf6; /* Violet */
@@ -225,6 +227,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .badge-new { color: var(--color-new); background: var(--color-new-bg); }
 .badge-called { color: var(--color-called); background: var(--color-called-bg); }
+.badge-qualified { color: var(--color-qualified); background: var(--color-qualified-bg); }
 .badge-callback { color: var(--color-callback); background: var(--color-callback-bg); }
 .badge-followup { color: var(--color-followup); background: var(--color-followup-bg); }
 .badge-paid { color: var(--color-paid); background: var(--color-paid-bg); }

@@ -116,7 +116,8 @@ export async function syncGoogleSheetsLeads() {
   // Smart Auto-Detect if configured column is missing or default headers not found
   if (nameIdx === -1) {
     nameIdx = headers.findIndex(h => 
-      h.includes('name') || h.includes('fullname') || h.includes('first') || 
+      (h.includes('name') && !h.includes('campaign') && !h.includes('ad') && !h.includes('form')) || 
+      h.includes('fullname') || h.includes('first') || 
       h.includes('naam') || h.includes('customer') || h.includes('client') || h === 'nama'
     );
   }
@@ -133,6 +134,12 @@ export async function syncGoogleSheetsLeads() {
     campaignIdx = headers.findIndex(h => 
       h.includes('campaign') || h.includes('ad') || h.includes('source') || h.includes('form') || h.includes('ref')
     );
+  }
+
+  // Auto-detect note column
+  let noteIdx = headers.indexOf('note');
+  if (noteIdx === -1) {
+    noteIdx = headers.findIndex(h => h.includes('note') || h.includes('comment') || h.includes('remark') || h.includes('detail'));
   }
 
   // Final fallback to typical column indices if still not found
@@ -152,6 +159,7 @@ export async function syncGoogleSheetsLeads() {
     const phone = phoneIdx !== -1 && row[phoneIdx] ? row[phoneIdx].trim() : '';
     const email = emailIdx !== -1 && row[emailIdx] ? row[emailIdx].trim() : '';
     const campaign = campaignIdx !== -1 && row[campaignIdx] ? row[campaignIdx].trim() : '';
+    const note = noteIdx !== -1 && row[noteIdx] ? row[noteIdx].trim() : '';
 
     // Skip empty rows
     if (!name && !phone && !email) continue;
@@ -176,9 +184,9 @@ export async function syncGoogleSheetsLeads() {
 
     // Insert new lead
     await dbClient.run(
-      `INSERT INTO leads (name, email, phone, status, source, campaign_name) 
-       VALUES (?, ?, ?, 'NEW', 'Google Sheets', ?)`,
-      [name, email || null, phone || null, campaign || 'Google Sheet Sync']
+      `INSERT INTO leads (name, email, phone, status, source, campaign_name, note) 
+       VALUES (?, ?, ?, 'NEW', 'Google Sheets', ?, ?)`,
+      [name, email || null, phone || null, campaign || 'Google Sheet Sync', note || null]
     );
     insertedCount++;
   }

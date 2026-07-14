@@ -19,6 +19,8 @@ export default function LeadModal({ leadId, onClose, onLeadUpdated }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('call'); // call, followup, payment
+  const [generalNote, setGeneralNote] = useState('');
+  const [saveNoteLoading, setSaveNoteLoading] = useState(false);
   
   // Logger forms state
   const [callNote, setCallNote] = useState('');
@@ -39,6 +41,7 @@ export default function LeadModal({ leadId, onClose, onLeadUpdated }) {
       if (!response.ok) throw new Error('Failed to load lead details');
       const json = await response.json();
       setData(json);
+      setGeneralNote(json.lead.note || '');
     } catch (err) {
       console.error(err);
       alert('Could not fetch lead logs');
@@ -71,6 +74,32 @@ export default function LeadModal({ leadId, onClose, onLeadUpdated }) {
       if (onLeadUpdated) onLeadUpdated();
     } catch (err) {
       alert(err.message);
+    }
+  };
+
+  // Save general lead note
+  const handleSaveGeneralNote = async () => {
+    setSaveNoteLoading(true);
+    try {
+      const response = await apiFetch(`/api/leads/${leadId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ note: generalNote })
+      });
+
+      if (!response.ok) throw new Error('Failed to save note');
+      
+      // Update local state
+      setData(prev => ({
+        ...prev,
+        lead: { ...prev.lead, note: generalNote }
+      }));
+      
+      alert('Note saved successfully!');
+      if (onLeadUpdated) onLeadUpdated();
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setSaveNoteLoading(false);
     }
   };
 
@@ -324,11 +353,34 @@ export default function LeadModal({ leadId, onClose, onLeadUpdated }) {
               >
                 <option value="NEW">New Lead (Naya)</option>
                 <option value="CALLED">Called (Call kiya)</option>
+                <option value="QUALIFIED">Qualified Lead</option>
                 <option value="CALLBACK">Call Back Later</option>
                 <option value="FOLLOWUP">Follow-up</option>
                 <option value="PAID">Paid (Success)</option>
                 <option value="LOST">Lost (Lost)</option>
               </select>
+            </div>
+
+            <div style={styles.section}>
+              <h4 style={styles.sectionTitle}>General Lead Note</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <textarea
+                  className="form-input"
+                  rows="3"
+                  placeholder="Write details, callback schedule, or notes here..."
+                  value={generalNote}
+                  onChange={(e) => setGeneralNote(e.target.value)}
+                  style={{ resize: 'vertical', fontFamily: 'inherit', fontSize: '0.85rem', backgroundColor: 'rgba(0, 0, 0, 0.2)', color: '#ffffff' }}
+                />
+                <button 
+                  onClick={handleSaveGeneralNote} 
+                  className="btn btn-secondary" 
+                  style={{ alignSelf: 'flex-end', padding: '0.35rem 0.75rem', fontSize: '0.75rem' }}
+                  disabled={saveNoteLoading}
+                >
+                  {saveNoteLoading ? 'Saving...' : 'Save Note'}
+                </button>
+              </div>
             </div>
 
             {/* Quick Action Input logger tabs */}

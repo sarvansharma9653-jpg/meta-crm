@@ -35,6 +35,7 @@ export default function Leads({ onSelectLead }) {
   const [newEmail, setNewEmail] = useState('');
   const [newPhone, setNewPhone] = useState('');
   const [newCampaign, setNewCampaign] = useState('');
+  const [newNote, setNewNote] = useState('');
   const [newSource, setNewSource] = useState('Manual');
   const [newStatus, setNewStatus] = useState('NEW');
   const [addLoading, setAddLoading] = useState(false);
@@ -90,7 +91,8 @@ export default function Leads({ onSelectLead }) {
           phone: newPhone,
           campaign_name: newCampaign,
           source: newSource,
-          status: newStatus
+          status: newStatus,
+          note: newNote
         })
       });
 
@@ -105,6 +107,7 @@ export default function Leads({ onSelectLead }) {
       setNewEmail('');
       setNewPhone('');
       setNewCampaign('');
+      setNewNote('');
       setNewSource('Manual');
       setNewStatus('NEW');
       
@@ -178,6 +181,7 @@ export default function Leads({ onSelectLead }) {
               <option value="">All Statuses</option>
               <option value="NEW">New Lead (Naya)</option>
               <option value="CALLED">Called (Call Kiya)</option>
+              <option value="QUALIFIED">Qualified Lead</option>
               <option value="CALLBACK">Call Back Later</option>
               <option value="FOLLOWUP">Follow-up</option>
               <option value="PAID">Paid (Success)</option>
@@ -225,6 +229,7 @@ export default function Leads({ onSelectLead }) {
           {leads.map((lead) => {
             let badgeClass = 'badge-new';
             if (lead.status === 'CALLED') badgeClass = 'badge-called';
+            if (lead.status === 'QUALIFIED') badgeClass = 'badge-qualified';
             if (lead.status === 'CALLBACK') badgeClass = 'badge-callback';
             if (lead.status === 'FOLLOWUP') badgeClass = 'badge-followup';
             if (lead.status === 'PAID') badgeClass = 'badge-paid';
@@ -271,6 +276,11 @@ export default function Leads({ onSelectLead }) {
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {lead.campaign_name}
                       </span>
+                    </div>
+                  )}
+                  {lead.note && (
+                    <div style={styles.mobileCardNote}>
+                      <strong>Note:</strong> {lead.note}
                     </div>
                   )}
                 </div>
@@ -459,6 +469,19 @@ export default function Leads({ onSelectLead }) {
                   />
                 </div>
 
+                <div className="form-group">
+                  <label className="form-label">Lead Note</label>
+                  <textarea
+                    className="form-input"
+                    placeholder="Enter any initial notes, follow-up info, or qualified details..."
+                    value={newNote}
+                    onChange={(e) => setNewNote(e.target.value)}
+                    disabled={addLoading}
+                    rows="3"
+                    style={{ resize: 'vertical', fontFamily: 'inherit' }}
+                  />
+                </div>
+
                 <div style={styles.formRow2}>
                   <div className="form-group" style={{ flex: 1 }}>
                     <label className="form-label">Source</label>
@@ -483,6 +506,7 @@ export default function Leads({ onSelectLead }) {
                     >
                       <option value="NEW">New Lead (Naya)</option>
                       <option value="CALLED">Called (Call kiya)</option>
+                      <option value="QUALIFIED">Qualified Lead</option>
                       <option value="CALLBACK">Call Back Later</option>
                       <option value="FOLLOWUP">Follow-up</option>
                     </select>
@@ -683,9 +707,9 @@ const styles = {
     alignItems: 'flex-start',
   },
   mobileLeadName: {
-    fontSize: '1rem',
-    fontWeight: '700',
-    color: '#ffffff',
+    fontSize: '1.1rem',
+    fontWeight: '800',
+    color: '#f8fafc',
     margin: 0,
   },
   mobileSourceBadge: {
@@ -757,5 +781,16 @@ const styles = {
     fontSize: '0.75rem',
     fontWeight: '600',
     cursor: 'pointer',
+  },
+  mobileCardNote: {
+    backgroundColor: 'rgba(0, 0, 0, 0.15)',
+    borderLeft: '3px solid #6366f1',
+    padding: '0.4rem 0.6rem',
+    borderRadius: '0 4px 4px 0',
+    fontSize: '0.75rem',
+    color: '#cbd5e1',
+    marginTop: '0.25rem',
+    fontStyle: 'italic',
+    lineHeight: '1.4',
   },
 };

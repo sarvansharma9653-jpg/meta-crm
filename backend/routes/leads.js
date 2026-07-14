@@ -68,7 +68,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
 // POST manually create a lead
 router.post('/', authenticateToken, async (req, res) => {
-  const { name, email, phone, status, source, campaign_name } = req.body;
+  const { name, email, phone, status, source, campaign_name, note } = req.body;
 
   if (!name) {
     return res.status(400).json({ error: 'Lead name is required' });
@@ -76,15 +76,16 @@ router.post('/', authenticateToken, async (req, res) => {
 
   try {
     const result = await dbClient.run(
-      `INSERT INTO leads (name, email, phone, status, source, campaign_name) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO leads (name, email, phone, status, source, campaign_name, note) 
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         name,
         email || null,
         phone || null,
         status || 'NEW',
         source || 'Manual',
-        campaign_name || null
+        campaign_name || null,
+        note || null
       ]
     );
 
@@ -99,7 +100,7 @@ router.post('/', authenticateToken, async (req, res) => {
 // PUT update lead (status, contact info, etc.)
 router.put('/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
-  const { name, email, phone, status, campaign_name } = req.body;
+  const { name, email, phone, status, campaign_name, note } = req.body;
 
   try {
     const lead = await dbClient.queryOne('SELECT * FROM leads WHERE id = ?', [id]);
@@ -109,7 +110,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     await dbClient.run(
       `UPDATE leads 
-       SET name = ?, email = ?, phone = ?, status = ?, campaign_name = ?, updated_at = CURRENT_TIMESTAMP
+       SET name = ?, email = ?, phone = ?, status = ?, campaign_name = ?, note = ?, updated_at = CURRENT_TIMESTAMP
        WHERE id = ?`,
       [
         name !== undefined ? name : lead.name,
@@ -117,6 +118,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
         phone !== undefined ? phone : lead.phone,
         status !== undefined ? status : lead.status,
         campaign_name !== undefined ? campaign_name : lead.campaign_name,
+        note !== undefined ? note : lead.note,
         id
       ]
     );

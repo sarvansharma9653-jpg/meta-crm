@@ -53,9 +53,15 @@ export async function initDB() {
         source VARCHAR(50) DEFAULT 'Meta Ads',
         meta_lead_id VARCHAR(255) UNIQUE,
         campaign_name VARCHAR(255),
+        note TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       )
+    `);
+
+    // Migration to add note column to existing leads table if it doesn't exist
+    await pgPool.query(`
+      ALTER TABLE leads ADD COLUMN IF NOT EXISTS note TEXT
     `);
 
     await pgPool.query(`
@@ -128,10 +134,18 @@ export async function initDB() {
         source TEXT DEFAULT 'Meta Ads',
         meta_lead_id TEXT UNIQUE,
         campaign_name TEXT,
+        note TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    // Migration to add note column to existing leads table in SQLite
+    try {
+      sqliteDb.exec('ALTER TABLE leads ADD COLUMN note TEXT');
+    } catch (e) {
+      // Column already exists, safe to ignore
+    }
 
     sqliteDb.exec(`
       CREATE TABLE IF NOT EXISTS calls (
