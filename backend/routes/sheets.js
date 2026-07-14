@@ -107,15 +107,38 @@ export async function syncGoogleSheetsLeads() {
   // Read Headers (Row 0)
   const headers = rows[0].map(h => h.trim().toLowerCase());
   
-  const nameIdx = headers.indexOf(sheetColName.trim().toLowerCase());
-  const phoneIdx = headers.indexOf(sheetColPhone.trim().toLowerCase());
-  const emailIdx = headers.indexOf(sheetColEmail.trim().toLowerCase());
-  const campaignIdx = headers.indexOf(sheetColCampaign.trim().toLowerCase());
+  // Try to find configured columns first
+  let nameIdx = headers.indexOf(sheetColName.trim().toLowerCase());
+  let phoneIdx = headers.indexOf(sheetColPhone.trim().toLowerCase());
+  let emailIdx = headers.indexOf(sheetColEmail.trim().toLowerCase());
+  let campaignIdx = headers.indexOf(sheetColCampaign.trim().toLowerCase());
 
-  // Validation
+  // Smart Auto-Detect if configured column is missing or default headers not found
   if (nameIdx === -1) {
-    throw new Error(`Column header "${sheetColName}" (Name) was not found in the sheet. Current headers: ${rows[0].join(', ')}`);
+    nameIdx = headers.findIndex(h => 
+      h.includes('name') || h.includes('fullname') || h.includes('first') || 
+      h.includes('naam') || h.includes('customer') || h.includes('client') || h === 'nama'
+    );
   }
+  if (phoneIdx === -1) {
+    phoneIdx = headers.findIndex(h => 
+      h.includes('phone') || h.includes('mobile') || h.includes('contact') || 
+      h.includes('number') || h.includes('tel') || h.includes('whatsapp') || h === 'ph' || h === 'mob'
+    );
+  }
+  if (emailIdx === -1) {
+    emailIdx = headers.findIndex(h => h.includes('email') || h.includes('mail'));
+  }
+  if (campaignIdx === -1) {
+    campaignIdx = headers.findIndex(h => 
+      h.includes('campaign') || h.includes('ad') || h.includes('source') || h.includes('form') || h.includes('ref')
+    );
+  }
+
+  // Final fallback to typical column indices if still not found
+  if (nameIdx === -1) nameIdx = 0; // Default to 1st column for Name
+  if (phoneIdx === -1) phoneIdx = nameIdx === 1 ? 0 : 1; // Default to 2nd column for Phone
+  if (emailIdx === -1) emailIdx = (nameIdx === 2 || phoneIdx === 2) ? 3 : 2; // Default to 3rd column for Email
 
   let insertedCount = 0;
   let duplicateCount = 0;

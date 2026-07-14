@@ -162,61 +162,65 @@ export default function SheetsSettings() {
                 </small>
               </div>
 
-              {/* Column Mapping Headers */}
-              <div style={styles.mappingSection}>
-                <h4 style={styles.mappingTitle}>Column Header Names Mapping</h4>
-                <p style={styles.mappingDesc}>
-                  Enter the exact header names (case-insensitive) of the columns in your Google Sheet.
-                </p>
+              {/* Column Mapping Headers (Hidden by default under Details element) */}
+              <details style={styles.advancedDetails}>
+                <summary style={styles.advancedSummary}>Advanced Settings (Optional Column Mapping)</summary>
+                <div style={styles.mappingSection}>
+                  <p style={styles.mappingDesc}>
+                    CRM automatically detects columns for Name, Phone, and Email. Only edit these fields if automatic detection is mapping the wrong columns.
+                  </p>
 
-                <div style={styles.formRow2}>
-                  <div className="form-group" style={{ flex: 1 }}>
-                    <label className="form-label">Name Column *</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={sheetColName}
-                      onChange={(e) => setSheetColName(e.target.value)}
-                      required
-                      disabled={loading || syncing}
-                    />
+                  <div style={styles.formRow2}>
+                    <div className="form-group" style={{ flex: 1 }}>
+                      <label className="form-label">Name Column Header</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Full Name"
+                        value={sheetColName}
+                        onChange={(e) => setSheetColName(e.target.value)}
+                        disabled={loading || syncing}
+                      />
+                    </div>
+                    <div className="form-group" style={{ flex: 1 }}>
+                      <label className="form-label">Phone Column Header</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Phone"
+                        value={sheetColPhone}
+                        onChange={(e) => setSheetColPhone(e.target.value)}
+                        disabled={loading || syncing}
+                      />
+                    </div>
                   </div>
-                  <div className="form-group" style={{ flex: 1 }}>
-                    <label className="form-label">Phone Column *</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={sheetColPhone}
-                      onChange={(e) => setSheetColPhone(e.target.value)}
-                      required
-                      disabled={loading || syncing}
-                    />
+
+                  <div style={styles.formRow2}>
+                    <div className="form-group" style={{ flex: 1 }}>
+                      <label className="form-label">Email Column Header</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Email"
+                        value={sheetColEmail}
+                        onChange={(e) => setSheetColEmail(e.target.value)}
+                        disabled={loading || syncing}
+                      />
+                    </div>
+                    <div className="form-group" style={{ flex: 1 }}>
+                      <label className="form-label">Campaign Column Header</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. Campaign"
+                        value={sheetColCampaign}
+                        onChange={(e) => setSheetColCampaign(e.target.value)}
+                        disabled={loading || syncing}
+                      />
+                    </div>
                   </div>
                 </div>
-
-                <div style={styles.formRow2}>
-                  <div className="form-group" style={{ flex: 1 }}>
-                    <label className="form-label">Email Column</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={sheetColEmail}
-                      onChange={(e) => setSheetColEmail(e.target.value)}
-                      disabled={loading || syncing}
-                    />
-                  </div>
-                  <div className="form-group" style={{ flex: 1 }}>
-                    <label className="form-label">Campaign Column</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={sheetColCampaign}
-                      onChange={(e) => setSheetColCampaign(e.target.value)}
-                      disabled={loading || syncing}
-                    />
-                  </div>
-                </div>
-              </div>
+              </details>
 
               <button 
                 type="submit" 
@@ -533,5 +537,19 @@ const styles = {
     fontSize: '0.75rem',
     lineHeight: '1.4',
     marginTop: '0.5rem',
+  },
+  advancedDetails: {
+    marginTop: '1.25rem',
+    borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+    paddingTop: '1rem',
+  },
+  advancedSummary: {
+    cursor: 'pointer',
+    fontSize: '0.85rem',
+    fontWeight: '600',
+    color: 'var(--text-secondary)',
+    outline: 'none',
+    userSelect: 'none',
+    transition: 'color var(--transition-fast)',
   },
 };
