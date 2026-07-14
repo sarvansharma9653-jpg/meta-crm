@@ -5,7 +5,8 @@ import {
   Kanban, 
   Settings, 
   LogOut, 
-  Database
+  Database,
+  FileSpreadsheet
 } from 'lucide-react';
 
 // Custom Facebook SVG Icon since brand icons are removed in newer Lucide versions
@@ -31,6 +32,7 @@ export default function Sidebar({ currentPage, setCurrentPage, user, onLogout })
     { id: 'leads', name: 'Leads List', icon: Users },
     { id: 'board', name: 'Pipeline Board', icon: Kanban },
     { id: 'meta-settings', name: 'Meta Settings', icon: Facebook },
+    { id: 'sheets-settings', name: 'Google Sheets', icon: FileSpreadsheet },
   ];
 
   return (

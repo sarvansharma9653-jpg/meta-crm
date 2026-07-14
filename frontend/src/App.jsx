@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import Leads from './pages/Leads';
 import Board from './pages/Board';
 import MetaSettings from './pages/MetaSettings';
+import SheetsSettings from './pages/SheetsSettings';
 import LeadModal from './components/LeadModal';
 
 export default function App() {
@@ -125,6 +126,10 @@ export default function App() {
 
         {currentPage === 'meta-settings' && (
           <MetaSettings />
+        )}
+
+        {currentPage === 'sheets-settings' && (
+          <SheetsSettings />
         )}
       </main>
 
