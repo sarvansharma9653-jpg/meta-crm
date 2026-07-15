@@ -100,6 +100,10 @@ router.get('/me', authenticateToken, async (req, res) => {
     res.json(user);
   } catch (error) {
     console.error('Fetch me error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Password Reset Recovery
 router.post('/reset-password', async (req, res) => {
   const { username, newPassword } = req.body;
