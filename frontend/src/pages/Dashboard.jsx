@@ -88,8 +88,8 @@ export default function Dashboard({ onSelectLead, setCurrentPage }) {
       {/* Header */}
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>Balaji Realities</h1>
-          <p style={styles.subtitle}>Jabalpur Plot Developments &bull; Real Estate Sales Dashboard</p>
+          <h1 style={styles.title}>Design Suvidha</h1>
+          <p style={styles.subtitle}>Design & Architecture Projects &bull; Lead CRM Dashboard</p>
         </div>
         <div style={styles.headerActions}>
           <button 

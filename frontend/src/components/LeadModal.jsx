@@ -451,7 +451,7 @@ export default function LeadModal({ leadId, onClose, onLeadUpdated }) {
                   <input
                     type="text"
                     className="form-input"
-                    placeholder="e.g. Balaji Estate"
+                    placeholder="e.g. Suvidha Estate"
                     value={leadSiteProject}
                     onChange={e => setLeadSiteProject(e.target.value)}
                   />

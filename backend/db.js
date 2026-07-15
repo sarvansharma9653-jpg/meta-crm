@@ -1,4 +1,4 @@
-import { DatabaseSync } from 'node:sqlite';
+// import { DatabaseSync } from 'node:sqlite'; // Dynamically imported below when running in local SQLite mode
 import path from 'path';
 import { fileURLToPath } from 'url';
 import pg from 'pg';
@@ -129,6 +129,7 @@ export async function initDB() {
   } else {
     console.log('Connecting to local SQLite database...');
     const dbPath = path.join(__dirname, 'crm.db');
+    const { DatabaseSync } = await import('node:sqlite');
     sqliteDb = new DatabaseSync(dbPath);
 
     // Initialize DB schema for SQLite

@@ -43,7 +43,7 @@ export default function Leads({ onSelectLead }) {
   const [newAddress, setNewAddress] = useState('');
   const [newProfession, setNewProfession] = useState('');
   const [newBudget, setNewBudget] = useState('');
-  const [newSiteProject, setNewSiteProject] = useState('Balaji Estate');
+  const [newSiteProject, setNewSiteProject] = useState('Suvidha Estate');
   const [newCustomSiteProject, setNewCustomSiteProject] = useState('');
   const [newVisitDate, setNewVisitDate] = useState('');
   const [newFollowupDate, setNewFollowupDate] = useState('');
@@ -134,7 +134,7 @@ export default function Leads({ onSelectLead }) {
       setNewAddress('');
       setNewProfession('');
       setNewBudget('');
-      setNewSiteProject('Balaji Estate');
+      setNewSiteProject('Suvidha Estate');
       setNewCustomSiteProject('');
       setNewVisitDate('');
       setNewFollowupDate('');
@@ -248,12 +248,12 @@ export default function Leads({ onSelectLead }) {
               style={styles.selectInput}
             >
               <option value="">All Projects</option>
-              <option value="Balaji Estate">Balaji Estate</option>
-              <option value="Balaji Divine City">Balaji Divine City</option>
-              <option value="Balaji Vihar">Balaji Vihar</option>
+              <option value="Suvidha Estate">Suvidha Estate</option>
+              <option value="Suvidha Divine City">Suvidha Divine City</option>
+              <option value="Suvidha Vihar">Suvidha Vihar</option>
               {/* Dynamic custom projects loaded in state */}
               {leads.reduce((acc, lead) => {
-                if (lead.site_project && !['Balaji Estate', 'Balaji Divine City', 'Balaji Vihar'].includes(lead.site_project) && !acc.includes(lead.site_project)) {
+                if (lead.site_project && !['Suvidha Estate', 'Suvidha Divine City', 'Suvidha Vihar'].includes(lead.site_project) && !acc.includes(lead.site_project)) {
                   acc.push(lead.site_project);
                 }
                 return acc;
@@ -601,9 +601,9 @@ export default function Leads({ onSelectLead }) {
                       onChange={(e) => setNewSiteProject(e.target.value)}
                       disabled={addLoading}
                     >
-                      <option value="Balaji Estate">Balaji Estate</option>
-                      <option value="Balaji Divine City">Balaji Divine City</option>
-                      <option value="Balaji Vihar">Balaji Vihar</option>
+                      <option value="Suvidha Estate">Suvidha Estate</option>
+                      <option value="Suvidha Divine City">Suvidha Divine City</option>
+                      <option value="Suvidha Vihar">Suvidha Vihar</option>
                       <option value="Other">Other / Custom Site</option>
                     </select>
                   </div>
