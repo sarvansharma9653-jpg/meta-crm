@@ -29,18 +29,20 @@
   /* Status Colors */
   --color-new: #38bdf8; /* Sky Blue */
   --color-new-bg: rgba(56, 189, 248, 0.12);
-  --color-called: #f59e0b; /* Amber */
-  --color-called-bg: rgba(245, 158, 11, 0.12);
-  --color-qualified: #06b6d4; /* Cyan */
-  --color-qualified-bg: rgba(6, 182, 212, 0.12);
-  --color-callback: #ec4899; /* Pink */
-  --color-callback-bg: rgba(236, 72, 153, 0.12);
-  --color-followup: #8b5cf6; /* Violet */
-  --color-followup-bg: rgba(139, 92, 246, 0.12);
-  --color-paid: #10b981; /* Emerald */
-  --color-paid-bg: rgba(16, 185, 129, 0.12);
-  --color-lost: #ef4444; /* Red */
-  --color-lost-bg: rgba(239, 68, 68, 0.12);
+  --color-contacted: #60a5fa; /* Blue */
+  --color-contacted-bg: rgba(96, 165, 250, 0.12);
+  --color-followup: #f97316; /* Orange */
+  --color-followup-bg: rgba(249, 115, 22, 0.12);
+  --color-qualified: #10b981; /* Green */
+  --color-qualified-bg: rgba(16, 185, 129, 0.12);
+  --color-visit_scheduled: #a855f7; /* Purple */
+  --color-visit_scheduled-bg: rgba(168, 85, 247, 0.12);
+  --color-visited: #ec4899; /* Pink */
+  --color-visited-bg: rgba(236, 72, 153, 0.12);
+  --color-converted: #34d399; /* Emerald/Green */
+  --color-converted-bg: rgba(52, 211, 153, 0.15);
+  --color-not_interested: #94a3b8; /* Grey */
+  --color-not_interested-bg: rgba(148, 163, 184, 0.12);
 
   /* Transitions & Shadows */
   --transition-fast: 0.2s ease;
@@ -226,12 +228,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .badge-new { color: var(--color-new); background: var(--color-new-bg); }
-.badge-called { color: var(--color-called); background: var(--color-called-bg); }
-.badge-qualified { color: var(--color-qualified); background: var(--color-qualified-bg); }
-.badge-callback { color: var(--color-callback); background: var(--color-callback-bg); }
+.badge-contacted { color: var(--color-contacted); background: var(--color-contacted-bg); }
 .badge-followup { color: var(--color-followup); background: var(--color-followup-bg); }
-.badge-paid { color: var(--color-paid); background: var(--color-paid-bg); }
-.badge-lost { color: var(--color-lost); background: var(--color-lost-bg); }
+.badge-qualified { color: var(--color-qualified); background: var(--color-qualified-bg); }
+.badge-visit_scheduled { color: var(--color-visit_scheduled); background: var(--color-visit_scheduled-bg); }
+.badge-visited { color: var(--color-visited); background: var(--color-visited-bg); }
+.badge-converted { color: var(--color-converted); background: var(--color-converted-bg); }
+.badge-not_interested { color: var(--color-not_interested); background: var(--color-not_interested-bg); }
 
 /* Table Component styling */
 .custom-table-container {

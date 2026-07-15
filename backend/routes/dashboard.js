@@ -6,59 +6,70 @@ const router = express.Router();
 
 router.get('/stats', authenticateToken, async (req, res) => {
   try {
+    // Today's local date in YYYY-MM-DD
+    const todayIST = new Date(new Date().getTime() + (5.5 * 60 * 60 * 1000));
+    const todayStr = todayIST.toISOString().split('T')[0];
+
     // 1. Total Leads
     const totalLeadsRow = await dbClient.queryOne('SELECT COUNT(*) as count FROM leads');
     const totalLeads = totalLeadsRow ? parseInt(totalLeadsRow.count) : 0;
 
-    // 2. Leads by Status
+    // 2. Qualified Leads
+    const qualifiedLeadsRow = await dbClient.queryOne("SELECT COUNT(*) as count FROM leads WHERE status = 'QUALIFIED'");
+    const qualifiedLeads = qualifiedLeadsRow ? parseInt(qualifiedLeadsRow.count) : 0;
+
+    // 3. Visits Scheduled this week
+    const dayOfWeek = todayIST.getDay();
+    const startOfWeek = new Date(todayIST);
+    startOfWeek.setDate(todayIST.getDate() - dayOfWeek);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    const startStr = startOfWeek.toISOString().split('T')[0];
+    const endStr = endOfWeek.toISOString().split('T')[0];
+
+    const visitsThisWeekRow = await dbClient.queryOne(
+      "SELECT COUNT(*) as count FROM leads WHERE status = 'VISIT_SCHEDULED' AND visit_date >= ? AND visit_date <= ?",
+      [startStr, endStr]
+    );
+    const visitsThisWeek = visitsThisWeekRow ? parseInt(visitsThisWeekRow.count) : 0;
+
+    // 4. Leads by Status
     const statusRows = await dbClient.query('SELECT status, COUNT(*) as count FROM leads GROUP BY status');
     const statusCounts = {
       NEW: 0,
-      CALLED: 0,
-      CALLBACK: 0,
+      CONTACTED: 0,
       FOLLOWUP: 0,
-      PAID: 0,
-      LOST: 0
+      QUALIFIED: 0,
+      VISIT_SCHEDULED: 0,
+      VISITED: 0,
+      CONVERTED: 0,
+      NOT_INTERESTED: 0
     };
     statusRows.forEach(row => {
-      if (statusCounts[row.status] !== undefined) {
-        statusCounts[row.status] = parseInt(row.count);
+      const uStatus = row.status ? row.status.toUpperCase() : 'NEW';
+      if (statusCounts[uStatus] !== undefined) {
+        statusCounts[uStatus] = parseInt(row.count);
       }
     });
 
-    // 3. Total Revenue Collected
-    const revenueRow = await dbClient.queryOne('SELECT SUM(amount) as total FROM payments');
-    const totalRevenue = revenueRow && revenueRow.total ? parseFloat(revenueRow.total) : 0;
-
-    // 4. Total Calls Logged
-    const totalCallsRow = await dbClient.queryOne('SELECT COUNT(*) as count FROM calls');
-    const totalCalls = totalCallsRow ? parseInt(totalCallsRow.count) : 0;
-
     // 5. Recent 5 Leads
     const recentLeads = await dbClient.query(
-      'SELECT id, name, email, phone, status, source, campaign_name, created_at FROM leads ORDER BY created_at DESC LIMIT 5'
+      'SELECT id, name, email, phone, status, source, site_project, budget, created_at FROM leads ORDER BY created_at DESC LIMIT 5'
     );
 
-    // 6. Upcoming 5 Followups (only pending ones)
+    // 6. Overdue and Today's Follow-up reminders (urgency order)
     const upcomingFollowups = await dbClient.query(
-      `SELECT f.id, f.note, f.followup_date, f.status, l.name as lead_name, l.phone as lead_phone, l.id as lead_id
-       FROM followups f 
-       JOIN leads l ON f.lead_id = l.id
-       WHERE f.status = 'PENDING'
-       ORDER BY f.followup_date ASC 
-       LIMIT 5`
+      `SELECT id, name, phone, status, followup_date, site_project, purpose 
+       FROM leads 
+       WHERE status NOT IN ('CONVERTED', 'NOT_INTERESTED') 
+         AND followup_date IS NOT NULL 
+         AND followup_date != '' 
+         AND followup_date <= ? 
+       ORDER BY followup_date ASC`,
+      [todayStr]
     );
 
-    // 7. Recent 5 Payments
-    const recentPayments = await dbClient.query(
-      `SELECT p.id, p.amount, p.payment_date, p.method, l.name as lead_name, l.id as lead_id
-       FROM payments p
-       JOIN leads l ON p.lead_id = l.id
-       ORDER BY p.payment_date DESC
-       LIMIT 5`
-    );
-
-    // 8. Lead Source distribution
+    // 7. Lead Source distribution
     const sourceRows = await dbClient.query('SELECT source, COUNT(*) as count FROM leads GROUP BY source');
     const sourceCounts = {};
     sourceRows.forEach(row => {
@@ -68,14 +79,13 @@ router.get('/stats', authenticateToken, async (req, res) => {
     res.json({
       summary: {
         totalLeads,
-        totalRevenue,
-        totalCalls,
+        qualifiedLeads,
+        visitsThisWeek,
         statusCounts,
         sourceCounts
       },
       recentLeads,
-      upcomingFollowups,
-      recentPayments
+      upcomingFollowups
     });
   } catch (error) {
     console.error('Fetch dashboard stats error:', error);

@@ -54,14 +54,36 @@ export async function initDB() {
         meta_lead_id VARCHAR(255) UNIQUE,
         campaign_name VARCHAR(255),
         note TEXT,
+        purpose VARCHAR(50),
+        address TEXT,
+        profession VARCHAR(255),
+        budget VARCHAR(100),
+        site_project VARCHAR(255),
+        visit_date VARCHAR(100),
+        followup_date VARCHAR(100),
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
-    // Migration to add note column to existing leads table if it doesn't exist
+    // Migration to add note/real estate columns to existing leads table if they don't exist
+    await pgPool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS note TEXT`);
+    await pgPool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS purpose VARCHAR(50)`);
+    await pgPool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS address TEXT`);
+    await pgPool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS profession VARCHAR(255)`);
+    await pgPool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS budget VARCHAR(100)`);
+    await pgPool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS site_project VARCHAR(255)`);
+    await pgPool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS visit_date VARCHAR(100)`);
+    await pgPool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS followup_date VARCHAR(100)`);
+
     await pgPool.query(`
-      ALTER TABLE leads ADD COLUMN IF NOT EXISTS note TEXT
+      CREATE TABLE IF NOT EXISTS remarks (
+        id SERIAL PRIMARY KEY,
+        lead_id INTEGER NOT NULL,
+        note TEXT NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(lead_id) REFERENCES leads(id) ON DELETE CASCADE
+      )
     `);
 
     await pgPool.query(`
@@ -135,17 +157,37 @@ export async function initDB() {
         meta_lead_id TEXT UNIQUE,
         campaign_name TEXT,
         note TEXT,
+        purpose TEXT,
+        address TEXT,
+        profession TEXT,
+        budget TEXT,
+        site_project TEXT,
+        visit_date TEXT,
+        followup_date TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
-    // Migration to add note column to existing leads table in SQLite
-    try {
-      sqliteDb.exec('ALTER TABLE leads ADD COLUMN note TEXT');
-    } catch (e) {
-      // Column already exists, safe to ignore
-    }
+    // Migration to add note/real estate columns to existing leads table in SQLite
+    const sqliteColumns = ['note', 'purpose', 'address', 'profession', 'budget', 'site_project', 'visit_date', 'followup_date'];
+    sqliteColumns.forEach(col => {
+      try {
+        sqliteDb.exec(`ALTER TABLE leads ADD COLUMN ${col} TEXT`);
+      } catch (e) {
+        // Column already exists, safe to ignore
+      }
+    });
+
+    sqliteDb.exec(`
+      CREATE TABLE IF NOT EXISTS remarks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        lead_id INTEGER NOT NULL,
+        note TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(lead_id) REFERENCES leads(id) ON DELETE CASCADE
+      )
+    `);
 
     sqliteDb.exec(`
       CREATE TABLE IF NOT EXISTS calls (

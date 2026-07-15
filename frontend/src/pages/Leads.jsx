@@ -28,6 +28,9 @@ export default function Leads({ onSelectLead }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
+  const [purposeFilter, setPurposeFilter] = useState('');
+  const [siteFilter, setSiteFilter] = useState('');
+  const [sortBy, setSortBy] = useState('created_at'); // created_at, followup_date
   
   // Manual Add Form Modal State
   const [showAddModal, setShowAddModal] = useState(false);
@@ -36,6 +39,14 @@ export default function Leads({ onSelectLead }) {
   const [newPhone, setNewPhone] = useState('');
   const [newCampaign, setNewCampaign] = useState('');
   const [newNote, setNewNote] = useState('');
+  const [newPurpose, setNewPurpose] = useState('Investment');
+  const [newAddress, setNewAddress] = useState('');
+  const [newProfession, setNewProfession] = useState('');
+  const [newBudget, setNewBudget] = useState('');
+  const [newSiteProject, setNewSiteProject] = useState('Balaji Estate');
+  const [newCustomSiteProject, setNewCustomSiteProject] = useState('');
+  const [newVisitDate, setNewVisitDate] = useState('');
+  const [newFollowupDate, setNewFollowupDate] = useState('');
   const [newSource, setNewSource] = useState('Manual');
   const [newStatus, setNewStatus] = useState('NEW');
   const [addLoading, setAddLoading] = useState(false);
@@ -50,6 +61,9 @@ export default function Leads({ onSelectLead }) {
       if (searchTerm) params.append('search', searchTerm);
       if (statusFilter) params.append('status', statusFilter);
       if (sourceFilter) params.append('source', sourceFilter);
+      if (purposeFilter) params.append('purpose', purposeFilter);
+      if (siteFilter) params.append('site_project', siteFilter);
+      if (sortBy) params.append('sort', sortBy);
 
       const response = await apiFetch(`/api/leads?${params.toString()}`);
       if (!response.ok) {
@@ -71,7 +85,7 @@ export default function Leads({ onSelectLead }) {
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, statusFilter, sourceFilter]);
+  }, [searchTerm, statusFilter, sourceFilter, purposeFilter, siteFilter, sortBy]);
 
   const handleAddLead = async (e) => {
     e.preventDefault();
@@ -83,6 +97,7 @@ export default function Leads({ onSelectLead }) {
 
     setAddLoading(true);
     try {
+      const finalProjectName = newSiteProject === 'Other' ? newCustomSiteProject : newSiteProject;
       const response = await apiFetch('/api/leads', {
         method: 'POST',
         body: JSON.stringify({
@@ -92,7 +107,14 @@ export default function Leads({ onSelectLead }) {
           campaign_name: newCampaign,
           source: newSource,
           status: newStatus,
-          note: newNote
+          note: newNote,
+          purpose: newPurpose,
+          address: newAddress,
+          profession: newProfession,
+          budget: newBudget,
+          site_project: finalProjectName,
+          visit_date: newVisitDate,
+          followup_date: newFollowupDate
         })
       });
 
@@ -108,6 +130,14 @@ export default function Leads({ onSelectLead }) {
       setNewPhone('');
       setNewCampaign('');
       setNewNote('');
+      setNewPurpose('Investment');
+      setNewAddress('');
+      setNewProfession('');
+      setNewBudget('');
+      setNewSiteProject('Balaji Estate');
+      setNewCustomSiteProject('');
+      setNewVisitDate('');
+      setNewFollowupDate('');
       setNewSource('Manual');
       setNewStatus('NEW');
       
@@ -162,14 +192,19 @@ export default function Leads({ onSelectLead }) {
           <input
             type="text"
             className="form-input"
-            placeholder="Search by name, phone, email, or campaign..."
+            placeholder="Search by name, phone, address, profession..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{ paddingLeft: '2.5rem' }}
           />
         </div>
 
-        <div style={styles.dropdownFilters}>
+        <div style={{
+          ...styles.dropdownFilters,
+          flexWrap: isMobile ? 'wrap' : 'nowrap',
+          width: isMobile ? '100%' : 'auto',
+          marginTop: isMobile ? '0.75rem' : 0
+        }}>
           {/* Status Filter */}
           <div style={styles.filterGroup}>
             <Filter size={14} color="var(--text-muted)" />
@@ -179,27 +214,64 @@ export default function Leads({ onSelectLead }) {
               style={styles.selectInput}
             >
               <option value="">All Statuses</option>
-              <option value="NEW">New Lead (Naya)</option>
-              <option value="CALLED">Called (Call Kiya)</option>
-              <option value="QUALIFIED">Qualified Lead</option>
-              <option value="CALLBACK">Call Back Later</option>
+              <option value="NEW">New Lead</option>
+              <option value="CONTACTED">Contacted</option>
               <option value="FOLLOWUP">Follow-up</option>
-              <option value="PAID">Paid (Success)</option>
-              <option value="LOST">Lost (Lost)</option>
+              <option value="QUALIFIED">Qualified</option>
+              <option value="VISIT_SCHEDULED">Visit Scheduled</option>
+              <option value="VISITED">Visited</option>
+              <option value="CONVERTED">Converted</option>
+              <option value="NOT_INTERESTED">Not Interested</option>
             </select>
           </div>
 
-          {/* Source Filter */}
+          {/* Purpose Filter */}
           <div style={styles.filterGroup}>
             <Filter size={14} color="var(--text-muted)" />
             <select
-              value={sourceFilter}
-              onChange={(e) => setSourceFilter(e.target.value)}
+              value={purposeFilter}
+              onChange={(e) => setPurposeFilter(e.target.value)}
               style={styles.selectInput}
             >
-              <option value="">All Sources</option>
-              <option value="Meta Ads">Meta Ads</option>
-              <option value="Manual">Manual Entry</option>
+              <option value="">All Purposes</option>
+              <option value="Investment">Investment</option>
+              <option value="Residential">Residential</option>
+            </select>
+          </div>
+
+          {/* Site Filter */}
+          <div style={styles.filterGroup}>
+            <Filter size={14} color="var(--text-muted)" />
+            <select
+              value={siteFilter}
+              onChange={(e) => setSiteFilter(e.target.value)}
+              style={styles.selectInput}
+            >
+              <option value="">All Projects</option>
+              <option value="Balaji Estate">Balaji Estate</option>
+              <option value="Balaji Divine City">Balaji Divine City</option>
+              <option value="Balaji Vihar">Balaji Vihar</option>
+              {/* Dynamic custom projects loaded in state */}
+              {leads.reduce((acc, lead) => {
+                if (lead.site_project && !['Balaji Estate', 'Balaji Divine City', 'Balaji Vihar'].includes(lead.site_project) && !acc.includes(lead.site_project)) {
+                  acc.push(lead.site_project);
+                }
+                return acc;
+              }, []).map(p => (
+                <option key={p} value={p}>{p}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Sort Filter */}
+          <div style={styles.filterGroup}>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              style={styles.selectInput}
+            >
+              <option value="created_at">Sort: Added Date</option>
+              <option value="followup_date">Sort: F/up Date</option>
             </select>
           </div>
         </div>
@@ -228,12 +300,28 @@ export default function Leads({ onSelectLead }) {
         <div style={styles.mobileLeadsList}>
           {leads.map((lead) => {
             let badgeClass = 'badge-new';
-            if (lead.status === 'CALLED') badgeClass = 'badge-called';
-            if (lead.status === 'QUALIFIED') badgeClass = 'badge-qualified';
-            if (lead.status === 'CALLBACK') badgeClass = 'badge-callback';
+            if (lead.status === 'CONTACTED') badgeClass = 'badge-contacted';
             if (lead.status === 'FOLLOWUP') badgeClass = 'badge-followup';
-            if (lead.status === 'PAID') badgeClass = 'badge-paid';
-            if (lead.status === 'LOST') badgeClass = 'badge-lost';
+            if (lead.status === 'QUALIFIED') badgeClass = 'badge-qualified';
+            if (lead.status === 'VISIT_SCHEDULED') badgeClass = 'badge-visit_scheduled';
+            if (lead.status === 'VISITED') badgeClass = 'badge-visited';
+            if (lead.status === 'CONVERTED') badgeClass = 'badge-converted';
+            if (lead.status === 'NOT_INTERESTED') badgeClass = 'badge-not_interested';
+
+            // Calculate follow-up status indicator
+            const fupIndicator = (() => {
+              if (!lead.followup_date) return { text: 'No follow-up set', style: { color: 'var(--text-muted)' } };
+              const todayIST = new Date(new Date().getTime() + (5.5 * 60 * 60 * 1000));
+              const todayStr = todayIST.toISOString().split('T')[0];
+              const fDate = new Date(lead.followup_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+              if (lead.followup_date < todayStr) {
+                return { text: `Overdue: ${fDate}`, style: { color: '#f87171', fontWeight: 'bold' } };
+              }
+              if (lead.followup_date === todayStr) {
+                return { text: `Today: ${fDate}`, style: { color: '#fbbf24', fontWeight: 'bold' } };
+              }
+              return { text: `Next F/up: ${fDate}`, style: { color: '#60a5fa' } };
+            })();
 
             return (
               <div 
@@ -245,14 +333,17 @@ export default function Leads({ onSelectLead }) {
                 <div style={styles.mobileCardHeader}>
                   <div>
                     <h4 style={styles.mobileLeadName}>{lead.name}</h4>
-                    <span style={{ 
-                      ...styles.mobileSourceBadge,
-                      color: lead.source === 'Meta Ads' ? '#38bdf8' : '#a855f7',
-                      backgroundColor: lead.source === 'Meta Ads' ? 'rgba(56, 189, 248, 0.08)' : 'rgba(168, 85, 247, 0.08)',
-                      borderColor: lead.source === 'Meta Ads' ? 'rgba(56, 189, 248, 0.15)' : 'rgba(168, 85, 247, 0.15)'
-                    }}>
-                      {lead.source}
-                    </span>
+                    {lead.site_project && (
+                      <span style={{ 
+                        fontSize: '0.75rem',
+                        color: 'var(--text-secondary)',
+                        display: 'block',
+                        marginTop: '0.15rem',
+                        fontWeight: 500
+                      }}>
+                        📍 {lead.site_project}
+                      </span>
+                    )}
                   </div>
                   <span className={`badge ${badgeClass}`} style={{ alignSelf: 'flex-start' }}>{lead.status}</span>
                 </div>
@@ -264,20 +355,19 @@ export default function Leads({ onSelectLead }) {
                       <span>{lead.phone}</span>
                     </div>
                   )}
-                  {lead.email && (
-                    <div style={styles.mobileCardRow}>
-                      <Mail size={13} color="var(--text-muted)" />
-                      <span>{lead.email}</span>
-                    </div>
-                  )}
-                  {lead.campaign_name && (
-                    <div style={styles.mobileCardRow}>
-                      <MessageSquare size={13} color="var(--text-muted)" />
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {lead.campaign_name}
-                      </span>
-                    </div>
-                  )}
+                  <div style={styles.mobileCardRow}>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Purpose: </span>
+                    <span style={{ fontSize: '0.8rem', color: '#ffffff' }}>{lead.purpose || 'Investment'}</span>
+                    {lead.budget && (
+                      <>
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginLeft: '0.5rem' }}>Budget: </span>
+                        <span style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 600 }}>{lead.budget}</span>
+                      </>
+                    )}
+                  </div>
+                  <div style={styles.mobileCardRow}>
+                    <span style={{ ...fupIndicator.style, fontSize: '0.8rem' }}>⏰ {fupIndicator.text}</span>
+                  </div>
                   {lead.note && (
                     <div style={styles.mobileCardNote}>
                       <strong>Note:</strong> {lead.note}
@@ -324,9 +414,10 @@ export default function Leads({ onSelectLead }) {
             <thead>
               <tr>
                 <th>Lead Info</th>
-                <th>Source</th>
-                <th>Campaign/Form</th>
+                <th>Project/Site</th>
+                <th>Purpose & Budget</th>
                 <th>Status</th>
+                <th>Next Follow-up</th>
                 <th>Added Date</th>
                 <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
@@ -334,11 +425,28 @@ export default function Leads({ onSelectLead }) {
             <tbody>
               {leads.map((lead) => {
                 let badgeClass = 'badge-new';
-                if (lead.status === 'CALLED') badgeClass = 'badge-called';
-                if (lead.status === 'CALLBACK') badgeClass = 'badge-callback';
+                if (lead.status === 'CONTACTED') badgeClass = 'badge-contacted';
                 if (lead.status === 'FOLLOWUP') badgeClass = 'badge-followup';
-                if (lead.status === 'PAID') badgeClass = 'badge-paid';
-                if (lead.status === 'LOST') badgeClass = 'badge-lost';
+                if (lead.status === 'QUALIFIED') badgeClass = 'badge-qualified';
+                if (lead.status === 'VISIT_SCHEDULED') badgeClass = 'badge-visit_scheduled';
+                if (lead.status === 'VISITED') badgeClass = 'badge-visited';
+                if (lead.status === 'CONVERTED') badgeClass = 'badge-converted';
+                if (lead.status === 'NOT_INTERESTED') badgeClass = 'badge-not_interested';
+
+                // Calculate follow-up status indicator
+                const fupIndicator = (() => {
+                  if (!lead.followup_date) return { text: 'Not scheduled', style: { color: 'var(--text-muted)' } };
+                  const todayIST = new Date(new Date().getTime() + (5.5 * 60 * 60 * 1000));
+                  const todayStr = todayIST.toISOString().split('T')[0];
+                  const fDate = new Date(lead.followup_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+                  if (lead.followup_date < todayStr) {
+                    return { text: `Overdue: ${fDate}`, style: { color: '#f87171', fontWeight: 'bold' } };
+                  }
+                  if (lead.followup_date === todayStr) {
+                    return { text: `Today: ${fDate}`, style: { color: '#fbbf24', fontWeight: 'bold' } };
+                  }
+                  return { text: fDate, style: { color: '#60a5fa' } };
+                })();
 
                 return (
                   <tr key={lead.id} style={{ cursor: 'pointer' }} onClick={() => onSelectLead(lead.id)}>
@@ -350,20 +458,18 @@ export default function Leads({ onSelectLead }) {
                       </div>
                     </td>
                     <td>
-                      <span style={{ 
-                        ...styles.sourceBadge, 
-                        color: lead.source === 'Meta Ads' ? '#3b5998' : '#a855f7',
-                        borderColor: lead.source === 'Meta Ads' ? 'rgba(59, 89, 152, 0.2)' : 'rgba(168, 85, 247, 0.2)',
-                        backgroundColor: lead.source === 'Meta Ads' ? 'rgba(59, 89, 152, 0.05)' : 'rgba(168, 85, 247, 0.05)'
-                      }}>
-                        {lead.source}
+                      <span style={{ fontWeight: 500, color: '#e2e8f0' }}>{lead.site_project || 'N/A'}</span>
+                    </td>
+                    <td>
+                      <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                        {lead.purpose || 'Investment'} &bull; <strong style={{ color: '#10b981' }}>{lead.budget || 'N/A'}</strong>
                       </span>
                     </td>
                     <td>
-                      <span style={styles.campaignText}>{lead.campaign_name || 'N/A'}</span>
+                      <span className={`badge ${badgeClass}`}>{lead.status}</span>
                     </td>
                     <td>
-                      <span className={`badge ${badgeClass}`}>{lead.status}</span>
+                      <span style={{ ...fupIndicator.style, fontSize: '0.85rem' }}>{fupIndicator.text}</span>
                     </td>
                     <td>
                       <span style={styles.dateText}>
@@ -405,7 +511,7 @@ export default function Leads({ onSelectLead }) {
       {/* Manual Add Lead Modal */}
       {showAddModal && (
         <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: '500px' }}>
+          <div className="modal-content" style={{ maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto' }}>
             <div className="modal-header">
               <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff' }}>Add Manual Lead</h3>
               <button 
@@ -417,7 +523,7 @@ export default function Leads({ onSelectLead }) {
             </div>
             
             <form onSubmit={handleAddLead}>
-              <div className="modal-body">
+              <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {addError && <div style={styles.modalError}>{addError}</div>}
                 
                 <div className="form-group">
@@ -433,57 +539,141 @@ export default function Leads({ onSelectLead }) {
                   />
                 </div>
 
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                    <label className="form-label">Phone Number</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="e.g. 9876543210"
+                      value={newPhone}
+                      onChange={(e) => setNewPhone(e.target.value)}
+                      disabled={addLoading}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                    <label className="form-label">Email Address</label>
+                    <input
+                      type="email"
+                      className="form-input"
+                      placeholder="e.g. client@mail.com"
+                      value={newEmail}
+                      onChange={(e) => setNewEmail(e.target.value)}
+                      disabled={addLoading}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                    <label className="form-label">Purpose</label>
+                    <select
+                      className="form-input"
+                      value={newPurpose}
+                      onChange={(e) => setNewPurpose(e.target.value)}
+                      disabled={addLoading}
+                    >
+                      <option value="Investment">Investment</option>
+                      <option value="Residential">Residential</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                    <label className="form-label">Budget (e.g. ₹ Range)</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="e.g. ₹15-20 Lakh"
+                      value={newBudget}
+                      onChange={(e) => setNewBudget(e.target.value)}
+                      disabled={addLoading}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                    <label className="form-label">Interested Site/Project</label>
+                    <select
+                      className="form-input"
+                      value={newSiteProject}
+                      onChange={(e) => setNewSiteProject(e.target.value)}
+                      disabled={addLoading}
+                    >
+                      <option value="Balaji Estate">Balaji Estate</option>
+                      <option value="Balaji Divine City">Balaji Divine City</option>
+                      <option value="Balaji Vihar">Balaji Vihar</option>
+                      <option value="Other">Other / Custom Site</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                    <label className="form-label">Profession</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="e.g. Salaried, Business"
+                      value={newProfession}
+                      onChange={(e) => setNewProfession(e.target.value)}
+                      disabled={addLoading}
+                    />
+                  </div>
+                </div>
+
+                {newSiteProject === 'Other' && (
+                  <div className="form-group">
+                    <label className="form-label">Custom Site / Project Name *</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="Enter new site/project name"
+                      value={newCustomSiteProject}
+                      onChange={(e) => setNewCustomSiteProject(e.target.value)}
+                      required
+                      disabled={addLoading}
+                    />
+                  </div>
+                )}
+
                 <div className="form-group">
-                  <label className="form-label">Phone Number</label>
+                  <label className="form-label">Address</label>
                   <input
                     type="text"
                     className="form-input"
-                    placeholder="Enter 10-digit phone"
-                    value={newPhone}
-                    onChange={(e) => setNewPhone(e.target.value)}
+                    placeholder="Enter location / city"
+                    value={newAddress}
+                    onChange={(e) => setNewAddress(e.target.value)}
                     disabled={addLoading}
                   />
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label">Email Address</label>
-                  <input
-                    type="email"
-                    className="form-input"
-                    placeholder="Enter email address"
-                    value={newEmail}
-                    onChange={(e) => setNewEmail(e.target.value)}
-                    disabled={addLoading}
-                  />
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                    <label className="form-label">Site Visit Date</label>
+                    <input
+                      type="date"
+                      className="form-input"
+                      value={newVisitDate}
+                      onChange={(e) => setNewVisitDate(e.target.value)}
+                      disabled={addLoading}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                    <label className="form-label">Follow-up Date</label>
+                    <input
+                      type="date"
+                      className="form-input"
+                      value={newFollowupDate}
+                      onChange={(e) => setNewFollowupDate(e.target.value)}
+                      disabled={addLoading}
+                    />
+                  </div>
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label">Campaign Name / Reference</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="e.g. Summer Offer, Google Search, Referrals"
-                    value={newCampaign}
-                    onChange={(e) => setNewCampaign(e.target.value)}
-                    disabled={addLoading}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Lead Note</label>
-                  <textarea
-                    className="form-input"
-                    placeholder="Enter any initial notes, follow-up info, or qualified details..."
-                    value={newNote}
-                    onChange={(e) => setNewNote(e.target.value)}
-                    disabled={addLoading}
-                    rows="3"
-                    style={{ resize: 'vertical', fontFamily: 'inherit' }}
-                  />
-                </div>
-
-                <div style={styles.formRow2}>
-                  <div className="form-group" style={{ flex: 1 }}>
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
                     <label className="form-label">Source</label>
                     <select
                       className="form-input"
@@ -491,12 +681,13 @@ export default function Leads({ onSelectLead }) {
                       onChange={(e) => setNewSource(e.target.value)}
                       disabled={addLoading}
                     >
-                      <option value="Manual">Manual</option>
+                      <option value="Manual">Manual Entry</option>
                       <option value="Meta Ads">Meta Ads</option>
+                      <option value="Referral">Referral</option>
                     </select>
                   </div>
 
-                  <div className="form-group" style={{ flex: 1 }}>
+                  <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
                     <label className="form-label">Initial Status</label>
                     <select
                       className="form-input"
@@ -505,16 +696,32 @@ export default function Leads({ onSelectLead }) {
                       disabled={addLoading}
                     >
                       <option value="NEW">New Lead (Naya)</option>
-                      <option value="CALLED">Called (Call kiya)</option>
-                      <option value="QUALIFIED">Qualified Lead</option>
-                      <option value="CALLBACK">Call Back Later</option>
+                      <option value="CONTACTED">Contacted</option>
                       <option value="FOLLOWUP">Follow-up</option>
+                      <option value="QUALIFIED">Qualified</option>
+                      <option value="VISIT_SCHEDULED">Visit Scheduled</option>
+                      <option value="VISITED">Visited</option>
+                      <option value="CONVERTED">Converted</option>
+                      <option value="NOT_INTERESTED">Not Interested</option>
                     </select>
                   </div>
                 </div>
+
+                <div className="form-group">
+                  <label className="form-label">Lead Notes / Remarks</label>
+                  <textarea
+                    className="form-input"
+                    placeholder="Enter details (Hindi/Hinglish allowed)"
+                    value={newNote}
+                    onChange={(e) => setNewNote(e.target.value)}
+                    disabled={addLoading}
+                    rows="2"
+                    style={{ resize: 'none', fontFamily: 'inherit' }}
+                  />
+                </div>
               </div>
 
-              <div className="modal-footer">
+              <div className="modal-footer" style={{ marginTop: '1rem' }}>
                 <button 
                   type="button" 
                   className="btn btn-secondary" 
