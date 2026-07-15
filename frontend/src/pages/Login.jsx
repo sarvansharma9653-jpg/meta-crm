@@ -148,16 +148,6 @@ export default function Login({ onLoginSuccess }) {
             </button>
           </form>
 
-          {/* Seed info help box */}
-          {!isRegistering && !isForgot && (
-            <div style={styles.helpBox}>
-              <Sparkles size={14} color="#6366f1" style={{ flexShrink: 0, marginTop: '2px' }} />
-              <div>
-                <span style={{ fontWeight: 600 }}>Default Login:</span>
-                <span style={{ fontStyle: 'italic', marginLeft: '4px' }}>admin / admin123</span>
-              </div>
-            </div>
-          )}
 
           <div style={styles.toggleFooter}>
             {isForgot ? (

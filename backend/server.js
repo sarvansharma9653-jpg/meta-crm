@@ -33,21 +33,9 @@ app.use(express.urlencoded({ extended: true }));
 async function startServer() {
   try {
     await initDB();
-
-    // Seed Default User (Admin / admin123) if no users exist
-    const usersCount = await dbClient.queryOne('SELECT COUNT(*) as count FROM users');
-    if (usersCount && parseInt(usersCount.count) === 0) {
-      console.log('No users found in database. Seeding default admin account...');
-      const salt = bcrypt.genSaltSync(10);
-      const passwordHash = bcrypt.hashSync('admin123', salt);
-      await dbClient.run('INSERT INTO users (username, password_hash) VALUES (?, ?)', ['admin', passwordHash]);
-      console.log('Seeded default user: admin / admin123');
-    }
   } catch (error) {
-    console.error('Failed database initialization / seeding:', error);
+    console.error('Failed database initialization:', error);
   }
-
-  // REST API Routes
   app.use('/api/auth', authRouter);
   app.use('/api/leads', leadsRouter);
   app.use('/api/dashboard', dashboardRouter);
