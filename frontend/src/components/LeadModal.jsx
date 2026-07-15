@@ -533,8 +533,34 @@ export default function LeadModal({ leadId, onClose, onLeadUpdated }) {
               </button>
             </form>
 
+            {/* Custom Google Sheets Fields & Questions */}
+            {data && data.lead && data.lead.custom_fields && (
+              (() => {
+                try {
+                  const fields = JSON.parse(data.lead.custom_fields);
+                  const entries = Object.entries(fields).filter(([_, val]) => val !== undefined && val !== null && val !== '');
+                  if (entries.length === 0) return null;
+                  return (
+                    <div style={styles.customFieldsSection}>
+                      <h4 style={styles.customFieldsHeader}>Google Sheet Questions / Survey Answers</h4>
+                      <div style={styles.customFieldsList}>
+                        {entries.map(([question, answer]) => (
+                          <div key={question} style={styles.customFieldItem}>
+                            <span style={styles.customFieldKey}>{question.replace(/_/g, ' ')}</span>
+                            <span style={styles.customFieldValue}>{answer}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                } catch (e) {
+                  return null;
+                }
+              })()
+            )}
+
             {/* Quick Action Input logger tabs (In Left column at the bottom) */}
-            <div style={{ ...styles.loggerSection, marginTop: '1rem' }}>
+            <div style={{ ...styles.loggerSection, marginTop: '1.25rem' }}>
               <div style={styles.tabHeaders}>
                 <button 
                   onClick={() => setActiveTab('call')}
@@ -901,5 +927,46 @@ const styles = {
     fontSize: '0.8rem',
     color: 'var(--text-secondary)',
     lineHeight: '1.4',
+  },
+  customFieldsSection: {
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    border: '1px solid var(--glass-border)',
+    borderRadius: '10px',
+    padding: '1.25rem',
+    marginTop: '1.25rem',
+  },
+  customFieldsHeader: {
+    fontSize: '0.85rem',
+    fontWeight: '600',
+    color: '#6366f1',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    marginBottom: '1rem',
+    borderBottom: '1px solid rgba(99, 102, 241, 0.2)',
+    paddingBottom: '0.5rem',
+  },
+  customFieldsList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.85rem',
+  },
+  customFieldItem: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.25rem',
+  },
+  customFieldKey: {
+    fontSize: '0.75rem',
+    fontWeight: '600',
+    color: 'var(--text-secondary)',
+    textTransform: 'capitalize',
+  },
+  customFieldValue: {
+    fontSize: '0.85rem',
+    color: '#ffffff',
+    backgroundColor: 'rgba(0, 0, 0, 0.15)',
+    padding: '0.5rem 0.75rem',
+    borderRadius: '6px',
+    border: '1px solid rgba(255, 255, 255, 0.05)',
   },
 };

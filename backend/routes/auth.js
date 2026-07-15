@@ -100,7 +100,29 @@ router.get('/me', authenticateToken, async (req, res) => {
     res.json(user);
   } catch (error) {
     console.error('Fetch me error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+// Password Reset Recovery
+router.post('/reset-password', async (req, res) => {
+  const { username, newPassword } = req.body;
+
+  if (!username || !newPassword) {
+    return res.status(400).json({ error: 'Username and new password are required' });
+  }
+
+  try {
+    const user = await dbClient.queryOne('SELECT * FROM users WHERE username = ?', [username]);
+    if (!user) {
+      return res.status(400).json({ error: 'Username not found' });
+    }
+
+    const salt = bcrypt.genSaltSync(10);
+    const passwordHash = bcrypt.hashSync(newPassword, salt);
+
+    await dbClient.run('UPDATE users SET password_hash = ? WHERE username = ?', [passwordHash, username]);
+    
+    res.json({ message: 'Password reset successful! Please login with your new password.' });
+  } catch (error) {
+    console.error('Password reset error:', error);
+    res.status(500).json({ error: 'Internal server error during password reset' });
   }
 });
 

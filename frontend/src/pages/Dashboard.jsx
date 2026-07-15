@@ -165,10 +165,14 @@ export default function Dashboard({ onSelectLead, setCurrentPage }) {
 
       {/* Metric Cards Grid */}
       <div style={styles.metricsGrid}>
-        {/* Total Leads */}
-        <div className="glass-card" style={styles.metricCard}>
+        {/* Total Leads -> Lead List */}
+        <div 
+          className="glass-card metric-card-interactive" 
+          style={{ ...styles.metricCard, cursor: 'pointer' }}
+          onClick={() => setCurrentPage && setCurrentPage('leads')}
+        >
           <div style={styles.cardHeader}>
-            <span style={styles.cardTitle}>Total Leads</span>
+            <span style={styles.cardTitle}>Lead List</span>
             <div style={{ ...styles.iconBg, backgroundColor: 'rgba(56, 189, 248, 0.1)' }}>
               <Users size={20} color="#38bdf8" />
             </div>

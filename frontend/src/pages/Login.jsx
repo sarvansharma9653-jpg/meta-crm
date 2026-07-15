@@ -6,6 +6,7 @@ export default function Login({ onLoginSuccess }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
+  const [isForgot, setIsForgot] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -23,11 +24,20 @@ export default function Login({ onLoginSuccess }) {
     setLoading(true);
 
     try {
-      const endpoint = isRegistering ? '/api/auth/register' : '/api/auth/login';
+      let endpoint;
+      let body;
+      if (isForgot) {
+        endpoint = '/api/auth/reset-password';
+        body = JSON.stringify({ username, newPassword: password });
+      } else {
+        endpoint = isRegistering ? '/api/auth/register' : '/api/auth/login';
+        body = JSON.stringify({ username, password });
+      }
+
       const response = await fetch(`${API_HOST}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        body
       });
 
       const data = await response.json();
@@ -36,7 +46,11 @@ export default function Login({ onLoginSuccess }) {
         throw new Error(data.error || 'Something went wrong');
       }
 
-      if (isRegistering) {
+      if (isForgot) {
+        setMessage('Password reset successful! Please login with your new password.');
+        setIsForgot(false);
+        setPassword('');
+      } else if (isRegistering) {
         setMessage('Registration successful! Please login.');
         setIsRegistering(false);
         setPassword('');
@@ -69,10 +83,10 @@ export default function Login({ onLoginSuccess }) {
 
         <div className="glass-card" style={styles.glassCardOver}>
           <h2 style={styles.formTitle}>
-            {isRegistering ? 'Create Console Account' : 'Console Login'}
+            {isForgot ? 'Reset Password' : isRegistering ? 'Create Console Account' : 'Console Login'}
           </h2>
           <p style={styles.formSubtitle}>
-            {isRegistering ? 'Register credentials to access lead system' : 'Sign in to access your dashboard'}
+            {isForgot ? 'Enter username and new password to recover access' : isRegistering ? 'Register credentials to access lead system' : 'Sign in to access your dashboard'}
           </p>
 
           {error && <div style={styles.errorBox}>{error}</div>}
@@ -96,13 +110,24 @@ export default function Login({ onLoginSuccess }) {
             </div>
 
             <div className="form-group" style={{ position: 'relative' }}>
-              <label className="form-label">Password</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label className="form-label">{isForgot ? 'New Password' : 'Password'}</label>
+                {!isRegistering && !isForgot && (
+                  <button 
+                    type="button"
+                    onClick={() => { setIsForgot(true); setError(''); setMessage(''); }}
+                    style={{ ...styles.toggleBtn, fontSize: '0.75rem', textDecoration: 'none', color: '#6366f1' }}
+                  >
+                    Forgot Password?
+                  </button>
+                )}
+              </div>
               <div style={styles.inputWrapper}>
                 <Lock size={16} style={styles.inputIcon} />
                 <input
                   type="password"
                   className="form-input"
-                  placeholder="Enter password"
+                  placeholder={isForgot ? "Enter new password" : "Enter password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading}
@@ -116,7 +141,7 @@ export default function Login({ onLoginSuccess }) {
                 <span>Processing...</span>
               ) : (
                 <>
-                  <span>{isRegistering ? 'Register Console' : 'Access Console'}</span>
+                  <span>{isForgot ? 'Reset Password' : isRegistering ? 'Register Console' : 'Access Console'}</span>
                   <LogIn size={16} />
                 </>
               )}
@@ -124,7 +149,7 @@ export default function Login({ onLoginSuccess }) {
           </form>
 
           {/* Seed info help box */}
-          {!isRegistering && (
+          {!isRegistering && !isForgot && (
             <div style={styles.helpBox}>
               <Sparkles size={14} color="#6366f1" style={{ flexShrink: 0, marginTop: '2px' }} />
               <div>
@@ -135,17 +160,31 @@ export default function Login({ onLoginSuccess }) {
           )}
 
           <div style={styles.toggleFooter}>
-            <button
-              onClick={() => {
-                setIsRegistering(!isRegistering);
-                setError('');
-                setMessage('');
-              }}
-              style={styles.toggleBtn}
-              disabled={loading}
-            >
-              {isRegistering ? 'Already have an account? Sign In' : 'Need another account? Register here'}
-            </button>
+            {isForgot ? (
+              <button
+                onClick={() => {
+                  setIsForgot(false);
+                  setError('');
+                  setMessage('');
+                }}
+                style={styles.toggleBtn}
+                disabled={loading}
+              >
+                Back to Login
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  setIsRegistering(!isRegistering);
+                  setError('');
+                  setMessage('');
+                }}
+                style={styles.toggleBtn}
+                disabled={loading}
+              >
+                {isRegistering ? 'Already have an account? Sign In' : 'Need another account? Register here'}
+              </button>
+            )}
           </div>
         </div>
       </div>

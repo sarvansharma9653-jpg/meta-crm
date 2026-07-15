@@ -61,6 +61,7 @@ export async function initDB() {
         site_project VARCHAR(255),
         visit_date VARCHAR(100),
         followup_date VARCHAR(100),
+        custom_fields TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       )
@@ -75,6 +76,7 @@ export async function initDB() {
     await pgPool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS site_project VARCHAR(255)`);
     await pgPool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS visit_date VARCHAR(100)`);
     await pgPool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS followup_date VARCHAR(100)`);
+    await pgPool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS custom_fields TEXT`);
 
     await pgPool.query(`
       CREATE TABLE IF NOT EXISTS remarks (
@@ -164,13 +166,14 @@ export async function initDB() {
         site_project TEXT,
         visit_date TEXT,
         followup_date TEXT,
+        custom_fields TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
     // Migration to add note/real estate columns to existing leads table in SQLite
-    const sqliteColumns = ['note', 'purpose', 'address', 'profession', 'budget', 'site_project', 'visit_date', 'followup_date'];
+    const sqliteColumns = ['note', 'purpose', 'address', 'profession', 'budget', 'site_project', 'visit_date', 'followup_date', 'custom_fields'];
     sqliteColumns.forEach(col => {
       try {
         sqliteDb.exec(`ALTER TABLE leads ADD COLUMN ${col} TEXT`);

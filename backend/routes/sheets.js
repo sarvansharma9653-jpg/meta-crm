@@ -164,6 +164,25 @@ export async function syncGoogleSheetsLeads() {
     // Skip empty rows
     if (!name && !phone && !email) continue;
 
+    // Compile custom fields (any columns that are not mapped to standard fields)
+    const customFieldsObj = {};
+    headers.forEach((h, idx) => {
+      if (
+        idx !== nameIdx && 
+        idx !== phoneIdx && 
+        idx !== emailIdx && 
+        idx !== campaignIdx && 
+        idx !== noteIdx && 
+        h !== 'id' && 
+        h !== 'created_time' && 
+        h !== 'lead_status'
+      ) {
+        const headerName = rows[0][idx] || h;
+        customFieldsObj[headerName] = row[idx] ? row[idx].trim() : '';
+      }
+    });
+    const customFieldsJSON = JSON.stringify(customFieldsObj);
+
     // Check if lead already exists in database (Idempotent Sync)
     let existingLead = null;
 
@@ -178,15 +197,20 @@ export async function syncGoogleSheetsLeads() {
     }
 
     if (existingLead) {
+      // Update custom_fields and metadata for existing leads to ensure we capture sheet answers
+      await dbClient.run(
+        `UPDATE leads SET custom_fields = ? WHERE id = ?`,
+        [customFieldsJSON, existingLead.id]
+      );
       duplicateCount++;
       continue;
     }
 
     // Insert new lead
     await dbClient.run(
-      `INSERT INTO leads (name, email, phone, status, source, campaign_name, note) 
-       VALUES (?, ?, ?, 'NEW', 'Google Sheets', ?, ?)`,
-      [name, email || null, phone || null, campaign || 'Google Sheet Sync', note || null]
+      `INSERT INTO leads (name, email, phone, status, source, campaign_name, note, custom_fields) 
+       VALUES (?, ?, ?, 'NEW', 'Google Sheets', ?, ?, ?)`,
+      [name, email || null, phone || null, campaign || 'Google Sheet Sync', note || null, customFieldsJSON]
     );
     insertedCount++;
   }
